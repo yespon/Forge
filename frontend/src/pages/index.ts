@@ -1,0 +1,7 @@
+export { LoginPage } from './LoginPage'
+export { WorkspacePage } from './WorkspacePage'
+export { TasksPage } from './TasksPage'
+export { TaskDetailPage } from './TaskDetailPage'
+export { SettingsPage } from './SettingsPage'
+export { AdminPage } from './AdminPage'
+export { SkillsPage } from './SkillsPage'

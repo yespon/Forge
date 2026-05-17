@@ -1,0 +1,66 @@
+{
+  "nav": {
+    "chat": "Chat",
+    "models": "Models",
+    "skills": "Skills",
+    "memory": "Memory",
+    "mcp": "MCP Servers",
+    "tasks": "Tasks",
+    "settings": "Settings",
+    "admin": "Admin"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "search": "Search",
+    "confirm": "Confirm",
+    "no_data": "No data",
+    "retry": "Retry"
+  },
+  "skills": {
+    "title": "Skills",
+    "total": "{count} skills",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "memory": {
+    "title": "Memory",
+    "total": "{count} memories",
+    "search": "Search memories...",
+    "category": "Category",
+    "confidence": "Confidence",
+    "time": "Time"
+  },
+  "mcp": {
+    "title": "MCP Servers",
+    "total": "{count} servers",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
+  "models": {
+    "title": "Models",
+    "total": "{count} models",
+    "thinking": "Thinking",
+    "vision": "Vision",
+    "default": "Default"
+  },
+  "chat": {
+    "input": "Type a message...",
+    "send": "Send",
+    "new": "New Session"
+  },
+  "approval": {
+    "title": "Approvals",
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "task": {
+    "title": "Tasks",
+    "status": "Status",
+    "progress": "Progress",
+    "created": "Created"
+  }
+}

@@ -1,0 +1,133 @@
+# Forge Configuration
+# ============================================================================
+# This is the unified configuration for Forge × DeerFlow integration.
+# It merges Forge's .env settings with DeerFlow's YAML config format.
+
+config_version: 1
+
+# ============================================================================
+# Logging
+# ============================================================================
+log_level: info
+
+# ============================================================================
+# Token Usage
+# ============================================================================
+token_usage:
+  enabled: true
+
+# ============================================================================
+# Models Configuration
+# ============================================================================
+# Configure available LLM models for the agent to use.
+# Forge uses environment variables from .env for API keys.
+
+models:
+  # Anthropic Claude (default)
+  - name: claude-sonnet-4-6
+    display_name: Claude Sonnet 4.6
+    use: langchain_anthropic:ChatAnthropic
+    model: claude-sonnet-4-6-20250514
+    api_key: $ANTHROPIC_API_KEY
+    max_tokens: 4096
+    timeout: 600.0
+    max_retries: 2
+    supports_thinking: true
+    supports_vision: true
+
+  # OpenAI GPT-4o
+  # - name: gpt-4o
+  #   display_name: GPT-4o
+  #   use: langchain_openai:ChatOpenAI
+  #   model: gpt-4o
+  #   api_key: $OPENAI_API_KEY
+  #   max_tokens: 4096
+  #   timeout: 600.0
+  #   max_retries: 2
+  #   supports_vision: true
+  #   supports_reasoning_effort: true
+
+# ============================================================================
+# Tool Groups
+# ============================================================================
+tool_groups:
+  - name: web
+  - name: file:read
+  - name: file:write
+  - name: bash
+
+# ============================================================================
+# Tools
+# ============================================================================
+tools:
+  - name: web_search
+    group: web
+    use: agent_platform.integration.tools.web_search:web_search_tool
+    max_results: 5
+
+  - name: web_fetch
+    group: web
+    use: agent_platform.integration.tools.web_fetch:web_fetch_tool
+    timeout: 10
+
+  - name: read_file
+    group: file:read
+    use: agent_platform.integration.tools.file_ops:read_file_tool
+
+  - name: write_file
+    group: file:write
+    use: agent_platform.integration.tools.file_ops:write_file_tool
+
+  - name: bash
+    group: bash
+    use: agent_platform.integration.tools.bash:bash_tool
+    timeout: 120
+
+# ============================================================================
+# Skills Configuration
+# ============================================================================
+skills:
+  path: skills/public
+  container_path: /mnt/skills
+
+# ============================================================================
+# Summarization Configuration
+# ============================================================================
+summarization:
+  enabled: true
+  trigger:
+    - type: tokens
+      value: 15000
+  keep:
+    type: messages
+    value: 10
+  preserve_recent_skill_count: 5
+  preserve_recent_skill_tokens: 25000
+  preserve_recent_skill_tokens_per_skill: 5000
+
+# ============================================================================
+# Memory Configuration
+# ============================================================================
+memory:
+  enabled: true
+  debounce_seconds: 30
+  max_facts: 100
+  injection_enabled: true
+  max_injection_tokens: 2000
+
+# ============================================================================
+# Loop Detection Configuration
+# ============================================================================
+loop_detection:
+  enabled: true
+  warn_threshold: 3
+  hard_limit: 5
+  window_size: 20
+
+# ============================================================================
+# Title Generation Configuration
+# ============================================================================
+title:
+  enabled: true
+  max_words: 6
+  max_chars: 60

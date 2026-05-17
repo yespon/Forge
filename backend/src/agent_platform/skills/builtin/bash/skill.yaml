@@ -1,0 +1,13 @@
+name: bash
+version: 0.1.0
+description: Execute bash commands within the workspace
+visibility: builtin
+restrictions:
+  default_enabled: false
+  allowed_roles:
+    - platform_admin
+    - org_admin
+tools:
+  - name: execute_bash
+    entrypoint: tools.execute_bash
+    description: Execute bash commands. Working directory must be within /workspace.

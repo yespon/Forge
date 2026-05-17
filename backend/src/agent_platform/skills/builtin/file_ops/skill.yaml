@@ -1,0 +1,17 @@
+name: file_ops
+version: 0.1.0
+description: File operations including read, write, and path manipulation
+visibility: builtin
+restrictions:
+  default_enabled: false
+  allowed_roles:
+    - platform_admin
+    - org_admin
+    - developer
+tools:
+  - name: read_file
+    entrypoint: tools.read_file
+    description: Read file contents. Path is relative to /workspace.
+  - name: write_file
+    entrypoint: tools.write_file
+    description: Write content to file. Path is relative to /workspace.
