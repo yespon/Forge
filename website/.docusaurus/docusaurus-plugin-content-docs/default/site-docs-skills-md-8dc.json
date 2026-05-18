@@ -1,0 +1,23 @@
+{
+  "id": "skills",
+  "title": "Skills System",
+  "description": "Skills are defined as SKILL.md files with YAML front matter in skills/public/.",
+  "source": "@site/docs/skills.md",
+  "sourceDirName": ".",
+  "slug": "/skills",
+  "permalink": "/en/skills",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Missing source",
+    "permalink": "/en/middleware"
+  },
+  "next": {
+    "title": "Memory System",
+    "permalink": "/en/memory"
+  }
+}

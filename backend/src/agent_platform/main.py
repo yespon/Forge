@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Import models to register with Base
 from agent_platform import models  # noqa: F401
-from agent_platform.api.v1 import approvals, artifacts, auth, chat, connectors, health, orgs, sandbox, sessions, skills, tasks, users, webhooks, ws
+from agent_platform.api.v1 import approvals, artifacts, auth, chat, connectors, health, langgraph, orgs, sandbox, sessions, skills, tasks, users, webhooks, ws
 from agent_platform.api.v1 import integration as integration_routes
 from agent_platform.api.v1.admin import audit as admin_audit
 from agent_platform.config import get_settings
@@ -60,6 +60,7 @@ app.include_router(skills.router, prefix="/api/v1", tags=["skills"])
 app.include_router(webhooks.router, prefix="/api/v1")
 app.include_router(ws.router, prefix="/api/v1")
 app.include_router(integration_routes.router)
+app.include_router(langgraph.router)
 app.include_router(admin_audit.router, prefix="/api/v1/admin", tags=["admin"])
 
 

@@ -29,7 +29,10 @@ class TestMiddlewareChain:
         assert not any("HITL" in type(m).__name__ for m in c)
     def test_07_has_loop_detection(self):
         from agent_platform.integration.middleware_module import build_forge_middleware_chain
-        c = build_forge_middleware_chain()
+        from agent_platform.integration.config import ForgeDeerFlowConfig
+        cfg = ForgeDeerFlowConfig()
+        cfg.loop_detection.enabled = True
+        c = build_forge_middleware_chain(app_config=cfg)
         assert any("Loop" in type(m).__name__ for m in c)
 
 class TestMiddlewareHooks:
@@ -92,7 +95,10 @@ class TestLoopDetectionLogic:
     def test_06_freq_limit(self):
         from agent_platform.integration.middleware.loop_detection_middleware import LoopDetectionMiddleware
         ld = LoopDetectionMiddleware(tool_freq_warn=3, tool_freq_hard_limit=5, window_size=10)
-        for i in range(6): assert ld._check_loop("bash", {"cmd": f"echo {i}"}) is None
+        for i in range(4):
+            assert ld._check_loop("bash", {"cmd": f"echo {i}"}) is None
+        r = ld._check_loop("bash", {"cmd": "echo 4"})
+        assert r is not None and r.get("blocked")
     def test_07_freq_override(self):
         from agent_platform.integration.middleware.loop_detection_middleware import LoopDetectionMiddleware
         ld = LoopDetectionMiddleware(tool_freq_hard_limit=10, tool_freq_overrides={"bash": {"hard": {"hard_limit": 3}}})

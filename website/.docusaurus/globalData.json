@@ -1,0 +1,108 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/en/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/en/",
+          "mainDocId": "index",
+          "docs": [
+            {
+              "id": "api/approvals",
+              "path": "/en/api/approvals",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/models",
+              "path": "/en/api/models",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/overview",
+              "path": "/en/api/overview",
+              "sidebar": "docs"
+            },
+            {
+              "id": "api/tasks",
+              "path": "/en/api/tasks",
+              "sidebar": "docs"
+            },
+            {
+              "id": "architecture",
+              "path": "/en/architecture",
+              "sidebar": "docs"
+            },
+            {
+              "id": "channels",
+              "path": "/en/channels",
+              "sidebar": "docs"
+            },
+            {
+              "id": "configuration",
+              "path": "/en/configuration",
+              "sidebar": "docs"
+            },
+            {
+              "id": "deployment/docker",
+              "path": "/en/deployment/docker",
+              "sidebar": "docs"
+            },
+            {
+              "id": "index",
+              "path": "/en/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "mcp",
+              "path": "/en/mcp",
+              "sidebar": "docs"
+            },
+            {
+              "id": "memory",
+              "path": "/en/memory",
+              "sidebar": "docs"
+            },
+            {
+              "id": "middleware",
+              "path": "/en/middleware",
+              "sidebar": "docs"
+            },
+            {
+              "id": "model-configs",
+              "path": "/en/model-configs",
+              "sidebar": "docs"
+            },
+            {
+              "id": "quickstart",
+              "path": "/en/quickstart",
+              "sidebar": "docs"
+            },
+            {
+              "id": "roadmap",
+              "path": "/en/roadmap",
+              "sidebar": "docs"
+            },
+            {
+              "id": "skills",
+              "path": "/en/skills",
+              "sidebar": "docs"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docs": {
+              "link": {
+                "path": "/en/",
+                "label": "index"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

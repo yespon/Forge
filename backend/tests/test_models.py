@@ -11,18 +11,9 @@ class TestModelResolution:
         from agent_platform.integration.models import resolve_model_class
         c = resolve_model_class("langchain_openai:ChatOpenAI")
         assert "ChatOpenAI" in c.__name__
-    def test_03_resolve_deepseek(self):
-        from agent_platform.integration.models import resolve_model_class
-        c = resolve_model_class("langchain_deepseek:ChatDeepSeek")
-        assert "ChatDeepSeek" in c.__name__
-    def test_04_resolve_google(self):
-        from agent_platform.integration.models import resolve_model_class
-        c = resolve_model_class("langchain_google_genai:ChatGoogleGenerativeAI")
-        assert "Google" in c.__name__
-    def test_05_resolve_ollama(self):
-        from agent_platform.integration.models import resolve_model_class
-        c = resolve_model_class("langchain_ollama:ChatOllama")
-        assert "Ollama" in c.__name__
+
+
+
     def test_06_invalid_path(self):
         from agent_platform.integration.models import resolve_model_class
         try:

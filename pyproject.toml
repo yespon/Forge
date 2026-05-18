@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "agent-runtime-platform"
+version = "0.1.0"
+description = "Enterprise Multi-User Agent Runtime Platform"
+authors = ["Your Team <team@company.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.backend.dependencies]
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.32.0"}
+sqlalchemy = {extras = ["asyncpg"], version = "^2.0.36"}
+alembic = "^1.14.0"
+pydantic = "^2.10.0"
+pydantic-settings = "^2.6.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.17"
+httpx = "^0.27.0"
+redis = {extras = ["hiredis"], version = "^5.2.0"}
+structlog = "^24.4.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+black = "^24.10.0"
+isort = "^5.13.0"
+flake8 = "^7.1.0"
+mypy = "^1.13.0"
+pre-commit = "^4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["backend/src/tests"]

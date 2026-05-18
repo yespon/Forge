@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  backend:
+    environment:
+      - LOG_LEVEL=debug
+      - DEBUG=true
+    command: uvicorn agent_platform.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/src

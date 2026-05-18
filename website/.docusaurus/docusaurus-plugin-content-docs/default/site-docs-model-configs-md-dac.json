@@ -1,0 +1,23 @@
+{
+  "id": "model-configs",
+  "title": "Model Configurations",
+  "description": "10 providers configured: Anthropic, OpenAI, DeepSeek, Google, Ollama, vLLM, xAI Grok, MiniMax",
+  "source": "@site/docs/model-configs.md",
+  "sourceDirName": ".",
+  "slug": "/model-configs",
+  "permalink": "/en/model-configs",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Forge × DeerFlow — Development Roadmap",
+    "permalink": "/en/roadmap"
+  },
+  "next": {
+    "title": "Missing source",
+    "permalink": "/en/middleware"
+  }
+}

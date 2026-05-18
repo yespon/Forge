@@ -28,11 +28,18 @@ class ModelConfig:
     base_url: str = ""
     max_tokens: int = 4096
     temperature: float = 0.7
+    top_p: float = 0.9
     timeout: float = 600.0
     max_retries: int = 2
     supports_thinking: bool = False
     supports_vision: bool = False
     supports_reasoning_effort: bool = False
+    when_thinking_enabled: Optional[dict] = None
+    when_thinking_disabled: Optional[dict] = None
+    thinking_budget_tokens: Optional[int] = None
+    frequency_penalty: float = 0.0
+    presence_penalty: float = 0.0
+    stop_sequences: Optional[list[str]] = None
     extra_config: dict = field(default_factory=dict)
 
     def get_resolved_api_key(self) -> Optional[str]:
@@ -180,7 +187,7 @@ class ChannelConfig:
 
 @dataclass
 class SkillConfig:
-    path: str = "skills"
+    path: str = "skills/public"
     container_path: str = "/mnt/skills"
 
 

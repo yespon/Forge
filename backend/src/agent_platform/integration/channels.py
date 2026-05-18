@@ -99,6 +99,25 @@ class MessageBus:
             except Exception as e:
                 logger.error("Outbound callback error for %s: %s", message.channel_type, e)
 
+    def publish_inbound_nowait(self, message: InboundMessage) -> int:
+        """Publish inbound without awaiting (useful for tests/webhook threads)."""
+        try:
+            self._inbound.put_nowait(message)
+            return self._inbound.qsize()
+        except asyncio.QueueFull:
+            logger.warning("Inbound queue full for %s/%s", message.channel_type, message.chat_id)
+            return self._inbound.qsize()
+
+    async def drain_inbound(self, max_items: int = 100) -> list[InboundMessage]:
+        """Drain up to max_items inbound messages without blocking indefinitely."""
+        items: list[InboundMessage] = []
+        for _ in range(max_items):
+            try:
+                items.append(self._inbound.get_nowait())
+            except asyncio.QueueEmpty:
+                break
+        return items
+
     @property
     def inbound_pending(self) -> int:
         return self._inbound.qsize()
@@ -131,6 +150,20 @@ class Channel(ABC):
 
 
 class FeishuChannel(Channel):
+    @staticmethod
+    def parse_inbound_event(event: dict) -> Optional[InboundMessage]:
+        msg_type = event.get("header", {}).get("event_type", "")
+        if msg_type != "im.message.receive_v1":
+            return None
+        msg_data = event.get("event", {}).get("message", {})
+        return InboundMessage(
+            channel_type=ChannelType.FEISHU,
+            chat_id=msg_data.get("chat_id", ""),
+            user_id=event.get("event", {}).get("sender", {}).get("sender_id", {}).get("user_id", ""),
+            text=msg_data.get("content", ""),
+            raw_data=event,
+        )
+
     """Feishu/Lark channel using WebSocket long connection.
 
     Receives messages via Feishu event subscription and
@@ -181,6 +214,17 @@ class FeishuChannel(Channel):
 
 
 class SlackChannel(Channel):
+    @staticmethod
+    def parse_inbound_event(event: dict) -> Optional[InboundMessage]:
+        return InboundMessage(
+            channel_type=ChannelType.SLACK,
+            chat_id=event.get("channel", ""),
+            user_id=event.get("user", ""),
+            text=event.get("text", ""),
+            thread_id=event.get("thread_ts"),
+            raw_data=event,
+        )
+
     """Slack channel using Socket Mode."""
 
     def __init__(self, bus: MessageBus, config: dict):
@@ -200,6 +244,19 @@ class SlackChannel(Channel):
 
 
 class TelegramChannel(Channel):
+    @staticmethod
+    def parse_inbound_event(event: dict) -> Optional[InboundMessage]:
+        msg = event.get("message", event)
+        chat = msg.get("chat", {})
+        user = msg.get("from", {})
+        return InboundMessage(
+            channel_type=ChannelType.TELEGRAM,
+            chat_id=str(chat.get("id", "")),
+            user_id=str(user.get("id", "")),
+            text=msg.get("text", ""),
+            raw_data=event,
+        )
+
     """Telegram channel using Bot API long-polling."""
 
     def __init__(self, bus: MessageBus, config: dict):
@@ -219,6 +276,16 @@ class TelegramChannel(Channel):
 
 
 class DingTalkChannel(Channel):
+    @staticmethod
+    def parse_inbound_event(event: dict) -> Optional[InboundMessage]:
+        return InboundMessage(
+            channel_type=ChannelType.DINGTALK,
+            chat_id=event.get("conversationId", ""),
+            user_id=event.get("senderId", ""),
+            text=event.get("text", {}).get("content", "") if isinstance(event.get("text"), dict) else event.get("text", ""),
+            raw_data=event,
+        )
+
     """DingTalk channel using Stream Push (WebSocket)."""
 
     def __init__(self, bus: MessageBus, config: dict):
@@ -237,7 +304,7 @@ class DingTalkChannel(Channel):
         return True
 
 
-# Channel registry
+# Channel registry is finalized after all channel classes are defined.
 CHANNEL_REGISTRY: dict[str, type[Channel]] = {
     ChannelType.FEISHU: FeishuChannel,
     ChannelType.SLACK: SlackChannel,
@@ -436,6 +503,35 @@ class ChannelManager:
             logger.error("Agent chat error: %s", e)
             return f"Error: {e}"
 
+    async def inject_inbound(self, message: InboundMessage) -> None:
+        """Inject a message directly into the manager bus (useful for tests/mocks)."""
+        await self.bus.publish_inbound(message)
+
+    def inject_inbound_nowait(self, message: InboundMessage) -> int:
+        """Non-async inbound injection helper."""
+        return self.bus.publish_inbound_nowait(message)
+
+    async def handle_webhook(self, channel_type: str, payload: dict) -> bool:
+        """Convert a raw webhook payload into an inbound message and enqueue it."""
+        channel = self._channels.get(channel_type)
+        if channel is None:
+            # allow stateless parsing even before start()
+            channel_cls = CHANNEL_REGISTRY.get(channel_type)
+            if not channel_cls:
+                return False
+            try:
+                channel = channel_cls(self.bus, {}) if channel_type in {ChannelType.FEISHU, ChannelType.SLACK, ChannelType.TELEGRAM, ChannelType.DINGTALK} else channel_cls({})
+            except TypeError:
+                return False
+        parser = getattr(channel, 'parse_inbound_event', None)
+        if not parser:
+            return False
+        msg = parser(payload)
+        if not msg:
+            return False
+        await self.bus.publish_inbound(msg)
+        return True
+
     def get_status(self) -> dict:
         """Get channel manager status."""
         return {
@@ -493,6 +589,19 @@ class ChannelService:
                 "client_id": cfg.channels.dingtalk_client_id,
                 "client_secret": cfg.channels.dingtalk_client_secret,
             }
+        if cfg.channels.wechat_bot_token:
+            channel_configs["wechat"] = {
+                "token": cfg.channels.wechat_bot_token,
+            }
+        if cfg.channels.wecom_bot_id or cfg.channels.wecom_bot_secret:
+            channel_configs["wecom"] = {
+                "corp_id": cfg.channels.wecom_bot_id,
+                "corp_secret": cfg.channels.wecom_bot_secret,
+            }
+        if cfg.channels.discord_bot_token:
+            channel_configs["discord"] = {
+                "bot_token": cfg.channels.discord_bot_token,
+            }
 
         if channel_configs:
             await self.manager.start(channel_configs)
@@ -540,7 +649,7 @@ class WeChatChannel(Channel):
     """WeChat channel using iLink protocol with long-polling."""
 
     def __init__(self, config: dict):
-        super().__init__(ChannelType.WECHAT)
+        super().__init__(ChannelType.WECHAT, MessageBus(), config)
         self.app_id = config.get("app_id", "")
         self.app_secret = config.get("app_secret", "")
         self.token = config.get("token", "")
@@ -567,7 +676,7 @@ class DiscordChannel(Channel):
     """Discord channel using Gateway WebSocket connections."""
 
     def __init__(self, config: dict):
-        super().__init__(ChannelType.DISCORD)
+        super().__init__(ChannelType.DISCORD, MessageBus(), config)
         self.bot_token = config.get("bot_token", "")
         self._running = False
 
@@ -592,7 +701,7 @@ class WeComChannel(Channel):
     """WeCom (WeChat Work) bot channel using HTTP callbacks."""
 
     def __init__(self, config: dict):
-        super().__init__(ChannelType.WECOM)
+        super().__init__(ChannelType.WECOM, MessageBus(), config)
         self.webhook_url = config.get("webhook_url", "")
         self.corp_id = config.get("corp_id", "")
         self.corp_secret = config.get("corp_secret", "")
@@ -609,3 +718,34 @@ class WeComChannel(Channel):
     async def send_message(self, message: OutboundMessage) -> bool:
         logger.info("WeCom send to %s: %s", message.user_id, message.text[:50])
         return True
+
+
+
+class MockChannel(Channel):
+    """Simple in-memory channel for runtime validation and tests."""
+
+    def __init__(self, bus: MessageBus, config: dict):
+        super().__init__("mock", bus, config)
+        self.sent_messages: list[OutboundMessage] = []
+
+    async def start(self) -> None:
+        self._running = True
+        self.bus.subscribe_outbound("mock", self.send_message)
+
+    async def stop(self) -> None:
+        self._running = False
+
+    async def send_message(self, message: OutboundMessage) -> bool:
+        self.sent_messages.append(message)
+        return True
+
+    async def emit(self, text: str, chat_id: str = "mock-chat", user_id: str = "mock-user") -> None:
+        await self.bus.publish_inbound(InboundMessage(channel_type="mock", chat_id=chat_id, user_id=user_id, text=text))
+
+
+# Finalize registry for all supported channels defined later in this module.
+CHANNEL_REGISTRY.update({
+    ChannelType.WECHAT: WeChatChannel,
+    ChannelType.WECOM: WeComChannel,
+    ChannelType.DISCORD: DiscordChannel,
+})

@@ -55,6 +55,21 @@ class ConnectionStatusResponse(BaseModel):
 
 # --- Endpoints ---
 
+
+class WebhookAck(BaseModel):
+    ok: bool = True
+    channel: str
+    accepted: bool = True
+    pending_messages: int = 0
+
+
+class MockEmitRequest(BaseModel):
+    text: str
+    chat_id: str = "mock-chat"
+    user_id: str = "mock-user"
+    channel: str = "mock"
+
+
 @router.get("", response_model=ConnectorListResponse)
 async def list_connectors(
     current_user: CurrentUser,
@@ -176,3 +191,53 @@ async def get_connector_status(
         is_active=connection.is_active,
         expires_at=connection.expires_at.isoformat() if connection.expires_at else None,
     )
+
+
+@router.post('/feishu/webhook', response_model=WebhookAck, include_in_schema=True)
+async def feishu_webhook(payload: dict) -> WebhookAck:
+    """Public webhook receiver for Feishu events."""
+    from agent_platform.integration.channels import get_channel_service
+    svc = get_channel_service()
+    accepted = await svc.manager.handle_webhook('feishu', payload)
+    return WebhookAck(channel='feishu', accepted=accepted, pending_messages=svc.manager.bus.inbound_pending)
+
+
+@router.post('/slack/webhook', response_model=WebhookAck, include_in_schema=True)
+async def slack_webhook(payload: dict) -> WebhookAck:
+    """Public webhook receiver for Slack events."""
+    from agent_platform.integration.channels import get_channel_service
+    svc = get_channel_service()
+    accepted = await svc.manager.handle_webhook('slack', payload)
+    return WebhookAck(channel='slack', accepted=accepted, pending_messages=svc.manager.bus.inbound_pending)
+
+
+@router.post('/telegram/webhook', response_model=WebhookAck, include_in_schema=True)
+async def telegram_webhook(payload: dict) -> WebhookAck:
+    """Public webhook receiver for Telegram updates."""
+    from agent_platform.integration.channels import get_channel_service
+    svc = get_channel_service()
+    accepted = await svc.manager.handle_webhook('telegram', payload)
+    return WebhookAck(channel='telegram', accepted=accepted, pending_messages=svc.manager.bus.inbound_pending)
+
+
+@router.post('/dingtalk/webhook', response_model=WebhookAck, include_in_schema=True)
+async def dingtalk_webhook(payload: dict) -> WebhookAck:
+    """Public webhook receiver for DingTalk events."""
+    from agent_platform.integration.channels import get_channel_service
+    svc = get_channel_service()
+    accepted = await svc.manager.handle_webhook('dingtalk', payload)
+    return WebhookAck(channel='dingtalk', accepted=accepted, pending_messages=svc.manager.bus.inbound_pending)
+
+
+@router.post('/mock/emit', response_model=WebhookAck, include_in_schema=True)
+async def mock_emit(request: MockEmitRequest) -> WebhookAck:
+    """Runtime validation endpoint: inject a mock IM message into the channel bus."""
+    from agent_platform.integration.channels import InboundMessage, get_channel_service
+    svc = get_channel_service()
+    svc.manager.inject_inbound_nowait(InboundMessage(
+        channel_type=request.channel,
+        chat_id=request.chat_id,
+        user_id=request.user_id,
+        text=request.text,
+    ))
+    return WebhookAck(channel=request.channel, accepted=True, pending_messages=svc.manager.bus.inbound_pending)

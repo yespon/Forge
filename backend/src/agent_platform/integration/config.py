@@ -107,7 +107,12 @@ def load_yaml_config(path: str) -> Optional[dict]:
         var_name = match.group(1)
         return os.environ.get(var_name, match.group(0))
     resolved = re.sub(r'\$([A-Za-z_][A-Za-z0-9_]*)', _resolve_env, raw)
-    return yaml.safe_load(resolved)
+    
+    try:
+        data = yaml.safe_load(resolved)
+    except yaml.YAMLError:
+        return None
+    return data if data is not None else {}
 
 
 def _load_models(config: ForgeDeerFlowConfig, data: dict) -> None:
@@ -115,6 +120,7 @@ def _load_models(config: ForgeDeerFlowConfig, data: dict) -> None:
         config.models.append(ModelConfig(
             name=item["name"],
             display_name=item.get("display_name", item["name"]),
+            top_p=item.get("top_p", 0.9),
             use=item.get("use", "langchain_openai:ChatOpenAI"),
             model=item.get("model", item["name"]),
             api_key=item.get("api_key", ""),
@@ -126,6 +132,13 @@ def _load_models(config: ForgeDeerFlowConfig, data: dict) -> None:
             max_retries=item.get("max_retries", 2),
             supports_thinking=item.get("supports_thinking", False),
             supports_vision=item.get("supports_vision", False),
+            supports_reasoning_effort=item.get("supports_reasoning_effort", False),
+            when_thinking_enabled=item.get("when_thinking_enabled"),
+            when_thinking_disabled=item.get("when_thinking_disabled"),
+            thinking_budget_tokens=item.get("thinking_budget_tokens"),
+            frequency_penalty=item.get("frequency_penalty", 0.0),
+            presence_penalty=item.get("presence_penalty", 0.0),
+            stop_sequences=item.get("stop_sequences"),
         ))
 
 

@@ -1,0 +1,23 @@
+{
+  "id": "api/approvals",
+  "title": "Approvals API",
+  "description": "Pending Approvals",
+  "source": "@site/docs/api/approvals.md",
+  "sourceDirName": "api",
+  "slug": "/api/approvals",
+  "permalink": "/en/api/approvals",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Models API",
+    "permalink": "/en/api/models"
+  },
+  "next": {
+    "title": "Tasks API",
+    "permalink": "/en/api/tasks"
+  }
+}
