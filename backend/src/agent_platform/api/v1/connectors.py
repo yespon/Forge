@@ -3,7 +3,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,6 +68,10 @@ class MockEmitRequest(BaseModel):
     chat_id: str = "mock-chat"
     user_id: str = "mock-user"
     channel: str = "mock"
+
+
+class FeishuChallengeResponse(BaseModel):
+    challenge: str
 
 
 @router.get("", response_model=ConnectorListResponse)
@@ -193,10 +197,42 @@ async def get_connector_status(
     )
 
 
-@router.post('/feishu/webhook', response_model=WebhookAck, include_in_schema=True)
-async def feishu_webhook(payload: dict) -> WebhookAck:
-    """Public webhook receiver for Feishu events."""
+@router.post('/feishu/webhook', include_in_schema=True)
+async def feishu_webhook(
+    request: Request,
+    x_lark_signature: str | None = Header(default=None),
+    x_lark_request_timestamp: str | None = Header(default=None),
+    x_lark_request_nonce: str | None = Header(default=None),
+):
+    """Public webhook receiver for Feishu events.
+
+    Supports:
+    - url_verification challenge callbacks
+    - optional signature verification when headers are present
+    - normal event delivery into ChannelManager bus
+    """
     from agent_platform.integration.channels import get_channel_service
+    from agent_platform.services.feishu import get_feishu_client
+
+    raw_body = await request.body()
+    body_text = raw_body.decode('utf-8') if raw_body else '{}'
+    payload = await request.json()
+
+    # Feishu URL verification challenge handshake
+    if payload.get('type') == 'url_verification' and payload.get('challenge'):
+        return FeishuChallengeResponse(challenge=payload['challenge'])
+
+    client = get_feishu_client()
+    if x_lark_signature and x_lark_request_timestamp and client:
+        valid = client.verify_webhook_signature(
+            signature=x_lark_signature,
+            timestamp=x_lark_request_timestamp,
+            body=body_text,
+            nonce=x_lark_request_nonce,
+        )
+        if not valid:
+            raise HTTPException(status_code=401, detail='Invalid Feishu signature')
+
     svc = get_channel_service()
     accepted = await svc.manager.handle_webhook('feishu', payload)
     return WebhookAck(channel='feishu', accepted=accepted, pending_messages=svc.manager.bus.inbound_pending)

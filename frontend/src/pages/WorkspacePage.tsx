@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { ChatPanel } from '@/components/chat/ChatPanel'
@@ -22,6 +23,7 @@ import type { Session } from '@/types'
 
 export function WorkspacePage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const {
     sessions,
     currentSession,
@@ -118,9 +120,9 @@ export function WorkspacePage() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建会话</DialogTitle>
+            <DialogTitle>{t('workspace.new_session')}</DialogTitle>
             <DialogDescription>
-              创建一个新的 AI 会话来开始对话
+              {t('workspace.new_session_desc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -133,10 +135,10 @@ export function WorkspacePage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                会话名称 <span className="text-red-500">*</span>
+                {t('workspace.session_name')} <span className="text-red-500">{t('workspace.session_name_required')}</span>
               </label>
               <Input
-                placeholder="输入会话名称..."
+                placeholder={t('workspace.session_name_placeholder')}
                 value={newSessionName}
                 onChange={(e) => setNewSessionName(e.target.value)}
                 autoFocus
@@ -144,9 +146,9 @@ export function WorkspacePage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">描述（可选）</label>
+              <label className="text-sm font-medium">{t('workspace.description_optional')}</label>
               <Textarea
-                placeholder="输入会话描述..."
+                placeholder={t('workspace.description_placeholder')}
                 value={newSessionDescription}
                 onChange={(e) => setNewSessionDescription(e.target.value)}
                 rows={3}
@@ -163,7 +165,7 @@ export function WorkspacePage() {
               }}
               disabled={isCreating}
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleCreateSession}
@@ -174,7 +176,7 @@ export function WorkspacePage() {
               ) : (
                 <Plus className="h-4 w-4 mr-2" />
               )}
-              创建
+              {t('common.create')}
             </Button>
           </div>
         </DialogContent>

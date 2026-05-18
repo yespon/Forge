@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/layout/Header'
 import { Loader2, Play, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui'
@@ -35,18 +36,24 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
   cancelled: <XCircle className="h-4 w-4 text-gray-400" />,
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: '等待中',
-  queued: '排队中',
-  running: '运行中',
-  waiting_hitl: '待审批',
-  completed: '已完成',
-  failed: '失败',
-  cancelled: '已取消',
+const STATUS_LABELS: Record<string, string> = {}
+
+function useStatusLabels() {
+  const { t } = useTranslation()
+  return {
+    pending: t('task.status_pending'),
+    queued: t('task.status_queued'),
+    running: t('task.status_running'),
+    waiting_hitl: t('task.status_waiting_hitl'),
+    completed: t('task.status_completed'),
+    failed: t('task.status_failed'),
+    cancelled: t('task.status_cancelled'),
+  }
 }
 
 export function TasksPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [page, setPage] = useState(1)
@@ -71,13 +78,15 @@ export function TasksPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
   })
 
+  const statusLabels = useStatusLabels()
+
   return (
     <div className="flex flex-col h-screen bg-background">
       <Header />
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">任务管理</h1>
+            <h1 className="text-2xl font-bold">{t('task.title')}</h1>
             <div className="flex gap-2">
               {['', 'pending', 'running', 'completed', 'failed'].map((s) => (
                 <Button
@@ -86,7 +95,7 @@ export function TasksPage() {
                   size="sm"
                   onClick={() => { setStatusFilter(s); setPage(1) }}
                 >
-                  {s ? STATUS_LABELS[s] || s : '全部'}
+                  {s ? statusLabels[s as keyof typeof statusLabels] || s : t('common.all')}
                 </Button>
               ))}
             </div>
@@ -97,7 +106,7 @@ export function TasksPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : !data?.items.length ? (
-            <div className="text-center py-12 text-muted-foreground">暂无任务</div>
+            <div className="text-center py-12 text-muted-foreground">{t('task.no_tasks')}</div>
           ) : (
             <>
               <div className="space-y-2">
@@ -113,9 +122,9 @@ export function TasksPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{task.prompt}</p>
                       <p className="text-sm text-muted-foreground">
-                        {STATUS_LABELS[task.status] || task.status}
+                        {statusLabels[task.status as keyof typeof statusLabels] || task.status}
                         {task.progress > 0 && task.progress < 100 && ` · ${task.progress}%`}
-                        {task.created_at && ` · ${new Date(task.created_at).toLocaleString('zh-CN')}`}
+                        {task.created_at && ` · ${new Date(task.created_at).toLocaleString()}`}
                       </p>
                     </div>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
@@ -125,7 +134,7 @@ export function TasksPage() {
                           size="sm"
                           onClick={() => cancelMutation.mutate(task.id)}
                         >
-                          取消
+                          {t('common.cancel')}
                         </Button>
                       )}
                       {['completed', 'failed', 'cancelled'].includes(task.status) && (
@@ -150,7 +159,7 @@ export function TasksPage() {
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
                   >
-                    上一页
+                    {t('common.prev_page')}
                   </Button>
                   <span className="flex items-center text-sm text-muted-foreground">
                     {page} / {Math.ceil(data.total / data.page_size)}
@@ -161,7 +170,7 @@ export function TasksPage() {
                     disabled={page >= Math.ceil(data.total / data.page_size)}
                     onClick={() => setPage((p) => p + 1)}
                   >
-                    下一页
+                    {t('common.next_page')}
                   </Button>
                 </div>
               )}

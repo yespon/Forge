@@ -28,8 +28,8 @@ Each integrated component maintains Forge's enterprise security model
 while adding DeerFlow's rich agent capabilities.
 """
 
-from agent_platform.integration.config import ForgeDeerFlowConfig, get_integration_config
-from agent_platform.integration.agent_factory import (
+from agent_platform.harness.config import ForgeDeerFlowConfig, get_integration_config
+from agent_platform.harness.agents.factory import (
     create_forge_agent,
     get_available_models,
     resolve_model,

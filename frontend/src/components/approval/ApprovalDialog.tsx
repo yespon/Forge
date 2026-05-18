@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Shield, AlertTriangle, Check, X, Clock, User } from 'lucide-react'
 import {
   Dialog,
@@ -27,30 +28,30 @@ interface ApprovalDialogProps {
 
 const riskLevelConfig: Record<
   RiskLevel,
-  { color: string; bg: string; label: string; icon: typeof AlertTriangle }
+  { color: string; bg: string; labelKey: string; icon: typeof AlertTriangle }
 > = {
   low: {
     color: 'text-green-600',
     bg: 'bg-green-500/10',
-    label: '低风险',
+    labelKey: 'approval.risk_low',
     icon: Shield,
   },
   medium: {
     color: 'text-yellow-600',
     bg: 'bg-yellow-500/10',
-    label: '中等风险',
+    labelKey: 'approval.risk_medium',
     icon: Shield,
   },
   high: {
     color: 'text-orange-600',
     bg: 'bg-orange-500/10',
-    label: '高风险',
+    labelKey: 'approval.risk_high',
     icon: AlertTriangle,
   },
   critical: {
     color: 'text-red-600',
     bg: 'bg-red-500/10',
-    label: '严重风险',
+    labelKey: 'approval.risk_critical',
     icon: AlertTriangle,
   },
 }
@@ -65,6 +66,7 @@ export function ApprovalDialog({
 }: ApprovalDialogProps) {
   const [reason, setReason] = useState('')
   const [action, setAction] = useState<'approve' | 'reject' | null>(null)
+  const { t } = useTranslation()
 
   if (!approval) return null
 
@@ -96,10 +98,10 @@ export function ApprovalDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            审批请求
+            {t('approval.request')}
           </DialogTitle>
           <DialogDescription>
-            请审核以下工具调用请求，确认是否批准执行
+            {t('approval.review_desc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -115,17 +117,17 @@ export function ApprovalDialog({
           </div>
           <div>
             <p className={cn('font-medium', riskConfig.color)}>
-              {riskConfig.label}
+              {t(riskConfig.labelKey)}
             </p>
             <p className="text-sm text-muted-foreground">
-              此操作被标记为{riskConfig.label}，需要审批后执行
+              {t('approval.risk_desc', { level: t(riskConfig.labelKey) })}
             </p>
           </div>
         </div>
 
         {isExpired && (
           <Alert variant="destructive">
-            <AlertDescription>此审批请求已过期</AlertDescription>
+            <AlertDescription>{t('approval.expired')}</AlertDescription>
           </Alert>
         )}
 
@@ -133,7 +135,7 @@ export function ApprovalDialog({
         <div className="space-y-3">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              工具名称
+              {t('approval.tool_name')}
             </p>
             <p className="text-lg font-semibold">{approval.tool_name}</p>
           </div>
@@ -141,7 +143,7 @@ export function ApprovalDialog({
           {approval.description && (
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                描述
+                {t('approval.description')}
               </p>
               <p className="text-sm">{approval.description}</p>
             </div>
@@ -150,18 +152,18 @@ export function ApprovalDialog({
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="h-4 w-4" />
-              <span>请求时间: {new Date(approval.requested_at).toLocaleString('zh-CN')}</span>
+              <span>{new Date(approval.requested_at).toLocaleString()}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
               <Check className="h-3 w-3 mr-1" />
-              {approval.approval_count} 批准
+              {t('approval.approved_count', { count: approval.approval_count })}
             </Badge>
             <Badge variant="destructive">
               <X className="h-3 w-3 mr-1" />
-              {approval.rejection_count} 拒绝
+              {t('approval.rejected_count', { count: approval.rejection_count })}
             </Badge>
           </div>
         </div>
@@ -171,10 +173,10 @@ export function ApprovalDialog({
         {/* Reason Input */}
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            审批意见（可选）
+            {t('approval.reason_label')}
           </label>
           <Textarea
-            placeholder="输入您的审批意见..."
+            placeholder={t('approval.reason_placeholder')}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className="min-h-[80px]"
@@ -189,7 +191,7 @@ export function ApprovalDialog({
             onClick={onClose}
             disabled={isLoading}
           >
-            取消
+            {t('common.cancel')}
           </Button>
           <Button
             variant="outline"
@@ -202,7 +204,7 @@ export function ApprovalDialog({
             ) : (
               <X className="h-4 w-4" />
             )}
-            拒绝
+            {t('approval.reject')}
           </Button>
           <Button
             onClick={handleApprove}
@@ -214,7 +216,7 @@ export function ApprovalDialog({
             ) : (
               <Check className="h-4 w-4" />
             )}
-            批准
+            {t('approval.approve')}
           </Button>
         </div>
       </DialogContent>

@@ -5,6 +5,7 @@ import {
   Outlet,
   redirect,
 } from '@tanstack/react-router'
+import i18next from 'i18next'
 import { getAccessToken } from '@/lib/api'
 
 // Pages
@@ -123,7 +124,7 @@ export const router = createRouter({
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-muted-foreground">页面未找到</p>
+        <p className="text-muted-foreground">{i18next.t('error.not_found')}</p>
       </div>
     </div>
   ),

@@ -41,7 +41,7 @@
 | Summarization | ✅ | LLM-based context compression |
 | Loop detection | ✅ | Sliding window + hash |
 | MCP stdio/SSE | ✅ | Tool discovery/call |
-| IM channels (4) | ✅ | Feishu/Slack/Telegram/DingTalk |
+| IM channels (7) | ✅ | Feishu/Slack/Telegram/DingTalk/WeChat/WeCom/Discord |
 | Custom agent (SOUL.md) | ✅ | User-created agents |
 | MCP OAuth | ✅ | client_credentials + refresh_token |
 | Frontend pages (8) | ✅ | All management UIs |
@@ -51,7 +51,7 @@
 
 | Task | Status | Priority | Effort |
 |------|--------|----------|--------|
-| Frontend i18n (EN/CN) | 🚧 | P1 | 2 days |
+| Frontend i18n (EN/CN/JA) | ✅ | 3 languages, all pages i18n-ready |
 | More model providers (vLLM, xAI, etc.) | ⬜ | P1 | 1 day |
 | Kubernetes deployment manifests | ⬜ | P1 | 2 days |
 | Prometheus metrics | ⬜ | P1 | 1 day |
@@ -66,11 +66,11 @@
 | Task | Status | Priority | Effort |
 |------|--------|----------|--------|
 | Self-hosted model (vLLM/TGI) integration | ⬜ | P1 | 3 days |
-| ACP agent integration (Claude Code/Codex) | ⬜ | P1 | 5 days |
+| ACP agent integration (Claude Code/Codex) | ◐ | P1 | 3 days |
 | Skill evolution (agent-created skills) | ⬜ | P2 | 3 days |
-| Multi-language i18n (JP/FR/RU) | ⬜ | P2 | 3 days |
+| Multi-language i18n (JP/FR/RU) | ◐ | P2 | 2 days |
 | LangGraph Studio support | ⬜ | P2 | 2 days |
-| Agent observability (LangFuse) | ⬜ | P2 | 2 days |
+| Agent observability (LangFuse) | ◐ | P2 | 1 day |
 | Migration from SQLite option | ⬜ | P3 | 1 day |
 | Multi-region deployment | ⬜ | P3 | 5 days | 2 days |
 | Plugin marketplace | ⬜ | P3 | 5 days |

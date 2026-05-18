@@ -1,38 +1,48 @@
 import { useChatStore } from '@/stores/chatStore'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 import type { TaskStatus, TaskEvent } from '@/types'
 
-const statusConfig: Record<TaskStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  pending: { label: '等待中', variant: 'secondary' },
-  queued: { label: '队列中', variant: 'secondary' },
-  running: { label: '执行中', variant: 'default' },
-  waiting_hitl: { label: '等待审批', variant: 'outline' },
-  completed: { label: '已完成', variant: 'default' },
-  failed: { label: '失败', variant: 'destructive' },
-  cancelled: { label: '已取消', variant: 'secondary' },
+function useStatusConfig() {
+  const { t } = useTranslation()
+  return {
+    pending: { label: t('task.status_pending'), variant: 'secondary' as const },
+    queued: { label: t('task.status_queued'), variant: 'secondary' as const },
+    running: { label: t('task.status_running'), variant: 'default' as const },
+    waiting_hitl: { label: t('task.status_waiting_hitl'), variant: 'outline' as const },
+    completed: { label: t('task.status_completed'), variant: 'default' as const },
+    failed: { label: t('task.status_failed'), variant: 'destructive' as const },
+    cancelled: { label: t('task.status_cancelled'), variant: 'secondary' as const },
+  }
 }
 
-const eventTypeLabels: Record<string, string> = {
-  task_created: '任务创建',
-  task_queued: '进入队列',
-  task_started: '开始执行',
-  planning_started: '规划开始',
-  planning_completed: '规划完成',
-  step_started: '步骤开始',
-  step_completed: '步骤完成',
-  step_failed: '步骤失败',
-  tool_calling: '调用工具',
-  tool_result: '工具结果',
-  hitl_required: '需要审批',
-  hitl_resolved: '审批完成',
-  task_completed: '任务完成',
-  task_failed: '任务失败',
-  task_cancelled: '任务取消',
+function useEventTypeLabels() {
+  const { t } = useTranslation()
+  return {
+    task_created: t('task.event_task_created'),
+    task_queued: t('task.event_task_queued'),
+    task_started: t('task.event_task_started'),
+    planning_started: t('task.event_planning_started'),
+    planning_completed: t('task.event_planning_completed'),
+    step_started: t('task.event_step_started'),
+    step_completed: t('task.event_step_completed'),
+    step_failed: t('task.event_step_failed'),
+    tool_calling: t('task.event_tool_calling'),
+    tool_result: t('task.event_tool_result'),
+    hitl_required: t('task.event_hitl_required'),
+    hitl_resolved: t('task.event_hitl_resolved'),
+    task_completed: t('task.event_task_completed'),
+    task_failed: t('task.event_task_failed'),
+    task_cancelled: t('task.event_task_cancelled'),
+  } as Record<string, string>
 }
 
 export function TaskStatusPanel() {
   const { currentTaskId, currentTaskStatus, currentTaskProgress, taskEvents } = useChatStore()
+  const { t, i18n } = useTranslation()
+  const statusConfig = useStatusConfig()
+  const eventTypeLabels = useEventTypeLabels()
 
   if (!currentTaskId) return null
 
@@ -42,7 +52,7 @@ export function TaskStatusPanel() {
     <div className="border rounded-lg p-4 mb-4 bg-card">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">任务</span>
+          <span className="text-sm font-medium text-muted-foreground">{t('task.task_label')}</span>
           <span className="text-sm font-mono">{currentTaskId.slice(0, 8)}</span>
         </div>
         {status && (
@@ -53,7 +63,7 @@ export function TaskStatusPanel() {
       {/* Progress bar */}
       <div className="mb-3">
         <div className="flex justify-between text-xs text-muted-foreground mb-1">
-          <span>进度</span>
+          <span>{t('task.progress')}</span>
           <span>{currentTaskProgress}%</span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -72,10 +82,10 @@ export function TaskStatusPanel() {
       {/* Event timeline */}
       {taskEvents.length > 0 && (
         <div className="border-t pt-3 mt-3">
-          <h4 className="text-xs font-medium text-muted-foreground mb-2">执行记录</h4>
+          <h4 className="text-xs font-medium text-muted-foreground mb-2">{t('task.execution_log')}</h4>
           <div className="space-y-2 max-h-32 overflow-y-auto">
             {taskEvents.slice(-5).map((event, index) => (
-              <TaskEventItem key={`${event.id}-${index}`} event={event} />
+              <TaskEventItem key={`${event.id}-${index}`} event={event} eventTypeLabels={eventTypeLabels} locale={i18n.language} />
             ))}
           </div>
         </div>
@@ -84,7 +94,7 @@ export function TaskStatusPanel() {
   )
 }
 
-function TaskEventItem({ event }: { event: TaskEvent }) {
+function TaskEventItem({ event, eventTypeLabels, locale }: { event: TaskEvent; eventTypeLabels: Record<string, string>; locale: string }) {
   const label = eventTypeLabels[event.type] || event.type
 
   return (
@@ -102,7 +112,7 @@ function TaskEventItem({ event }: { event: TaskEvent }) {
         )}
       </div>
       <span className="text-muted-foreground flex-shrink-0">
-        {new Date(event.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+        {new Date(event.created_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
       </span>
     </div>
   )

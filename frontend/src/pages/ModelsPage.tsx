@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Loader2, Cpu, Eye, Brain } from 'lucide-react'
@@ -25,16 +26,18 @@ export function ModelsPage() {
     )
   }
 
+  const { t } = useTranslation()
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">模型管理</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('models.title')}</h1>
 
         {/* Feature Status */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>平台功能状态</CardTitle>
+            <CardTitle>{t('models.platform_status')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -50,7 +53,7 @@ export function ModelsPage() {
 
         {/* Models */}
         <h2 className="text-xl font-semibold mb-4">
-          可用模型 ({models?.total || 0})
+          {t('models.total', { count: models?.total || 0 })}
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {models?.models.map((model: ModelInfo) => (
@@ -69,12 +72,12 @@ export function ModelsPage() {
                   <div className="flex gap-4 text-sm text-muted-foreground">
                     {model.supports_thinking && (
                       <span className="flex items-center gap-1">
-                        <Brain className="h-4 w-4" /> 思考
+                        <Brain className="h-4 w-4" /> {t('models.thinking')}
                       </span>
                     )}
                     {model.supports_vision && (
                       <span className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" /> 视觉
+                        <Eye className="h-4 w-4" /> {t('models.vision')}
                       </span>
                     )}
                   </div>

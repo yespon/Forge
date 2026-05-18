@@ -6,7 +6,7 @@
 
 - Python 3.12+
 - Docker Desktop or Docker Engine
-- Poetry (`pip install poetry`)
+- uv (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
 - Git
 
 ### Initial Setup
@@ -76,13 +76,13 @@ make migrate-create
 make test
 
 # Run with coverage
-poetry run pytest --cov=src/agent_platform --cov-report=html
+uv run pytest --cov=src/agent_platform --cov-report=html
 
 # Run specific test
-poetry run pytest tests/test_health.py::test_health_check -v
+uv run pytest tests/test_health.py::test_health_check -v
 
 # Run with asyncio debug
-poetry run pytest -v --asyncio-mode=auto
+uv run pytest -v --asyncio-mode=auto
 ```
 
 ### 4. Code Quality
@@ -131,16 +131,16 @@ After modifying models:
 cd backend
 
 # Generate migration
-poetry run alembic revision --autogenerate -m "add user preferences"
+uv run alembic revision --autogenerate -m "add user preferences"
 
 # Review generated migration
 cat alembic/versions/*.py
 
 # Apply migration
-poetry run alembic upgrade head
+uv run alembic upgrade head
 
 # Rollback if needed
-poetry run alembic downgrade -1
+uv run alembic downgrade -1
 ```
 
 ## Testing
@@ -265,10 +265,10 @@ LOG_LEVEL=debug
 
 ```bash
 # Run with auto-reload
-poetry run uvicorn agent_platform.main:app --reload
+uv run uvicorn agent_platform.main:app --reload
 
 # With debugger
-poetry run python -m pdb -m uvicorn agent_platform.main:app
+uv run python -m pdb -m uvicorn agent_platform.main:app
 ```
 
 ### Common Issues
@@ -280,7 +280,7 @@ poetry run python -m pdb -m uvicorn agent_platform.main:app
 **Fix**: Check `.env` database credentials match docker-compose
 
 **Issue**: `alembic.util.exc.CommandError: Can't locate revision`
-**Fix**: Run `poetry run alembic stamp head` to mark current state
+**Fix**: Run `uv run alembic stamp head` to mark current state
 
 ## Docker Commands
 
