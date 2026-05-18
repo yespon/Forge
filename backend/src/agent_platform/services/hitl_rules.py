@@ -20,7 +20,7 @@ class HITLRulesEngine:
         {
             "name": "Block rm -rf commands",
             "description": "Critical risk: rm -rf can delete entire directory trees",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"rm\s+-rf.*|rm\s+-fr.*|rm\s+.*-rf.*|rm\s+.*-fr.*"
             },
@@ -92,7 +92,7 @@ class HITLRulesEngine:
         {
             "name": "Block shell redirection to system files",
             "description": "Critical risk: Redirecting output to system files",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r">\s*/(etc|bin|sbin|lib|usr|var|opt|sys|dev|boot)/.*"
             },
@@ -102,7 +102,7 @@ class HITLRulesEngine:
         {
             "name": "Block dd command to disk devices",
             "description": "Critical risk: dd can overwrite disk devices",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"dd\s+.*of=/dev/[sh]d[a-z]|dd\s+.*of=/dev/nvme"
             },
@@ -113,7 +113,7 @@ class HITLRulesEngine:
         {
             "name": "Block mkfs commands",
             "description": "Critical risk: mkfs formats filesystems",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"mkfs\.?\w*\s+/dev/"
             },
@@ -124,7 +124,7 @@ class HITLRulesEngine:
         {
             "name": "Block dangerous curl/wget with output",
             "description": "High risk: Downloading and executing remote scripts",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"curl\s+.*\|\s*(sh|bash|zsh)|wget\s+.*-O-\s*\|\s*(sh|bash|zsh)"
             },
@@ -134,7 +134,7 @@ class HITLRulesEngine:
         {
             "name": "Block sudo privilege escalation",
             "description": "High risk: Commands using sudo",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"^sudo\s+|\|\s*sudo\s+|&&\s*sudo\s+"
             },
@@ -144,7 +144,7 @@ class HITLRulesEngine:
         {
             "name": "Block chmod on system files",
             "description": "High risk: Changing permissions on system files",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"chmod\s+.*\s+/.*etc.*|chmod\s+.*\s+/.*bin.*"
             },
@@ -154,7 +154,7 @@ class HITLRulesEngine:
         {
             "name": "Block dangerous find with exec",
             "description": "High risk: find with -exec can execute arbitrary commands",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"find\s+.*-exec\s+(rm|mv|chmod|chown)"
             },
@@ -164,7 +164,7 @@ class HITLRulesEngine:
         {
             "name": "Block kill commands",
             "description": "Medium risk: Process termination commands",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"kill\s+-9|killall|pkill"
             },
@@ -174,7 +174,7 @@ class HITLRulesEngine:
         {
             "name": "Block systemctl stop/restart",
             "description": "High risk: Stopping system services",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"systemctl\s+(stop|restart|disable)\s+"
             },
@@ -184,7 +184,7 @@ class HITLRulesEngine:
         {
             "name": "Block user deletion commands",
             "description": "High risk: Deleting user accounts",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"userdel|userdel\s+-r|deluser"
             },
@@ -194,7 +194,7 @@ class HITLRulesEngine:
         {
             "name": "Block network configuration changes",
             "description": "High risk: Modifying network settings",
-            "tool_name_pattern": "execute_bash",
+            "tool_name_pattern": "(execute_)?bash",
             "argument_patterns": {
                 "command": r"iptables|nftables|ip\s+link\s+set|ifconfig.*\s+(up|down)"
             },

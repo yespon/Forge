@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Loader2, Server, CheckCircle, XCircle } from 'lucide-react'
@@ -6,6 +7,7 @@ import { integrationApi } from '@/lib/api'
 import type { MCPServerInfo } from '@/types'
 
 export function MCPPage() {
+  const { t } = useTranslation()
   const { data, isLoading } = useQuery({
     queryKey: ['mcp-servers'],
     queryFn: () => integrationApi.getMCPServers(),
@@ -17,7 +19,7 @@ export function MCPPage() {
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 flex items-center gap-2">
           <Server className="h-8 w-8 text-cyan-500" />
-          MCP 服务器
+          {t('mcp.title')}
         </h1>
 
         {isLoading ? (
@@ -27,7 +29,7 @@ export function MCPPage() {
         ) : (
           <>
             <p className="text-muted-foreground mb-6">
-              {data?.total || 0} 个已配置服务器
+              {t('mcp.total', { count: data?.total || 0 })}
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {data?.servers.map((srv: MCPServerInfo) => (
@@ -45,11 +47,11 @@ export function MCPPage() {
                       </span>
                       {srv.enabled ? (
                         <span className="flex items-center gap-1 text-green-600">
-                          <CheckCircle className="h-4 w-4" /> 已启用
+                          <CheckCircle className="h-4 w-4" /> {t('mcp.enabled')}
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 text-gray-400">
-                          <XCircle className="h-4 w-4" /> 已禁用
+                          <XCircle className="h-4 w-4" /> {t('mcp.disabled')}
                         </span>
                       )}
                     </div>

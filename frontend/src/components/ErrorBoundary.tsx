@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import i18next from 'i18next'
 
 interface Props {
   children: ReactNode
@@ -28,12 +29,14 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback
 
+      const t = i18next.t.bind(i18next)
+
       return (
         <div className="min-h-screen flex items-center justify-center bg-background p-6">
           <div className="max-w-md text-center space-y-4">
-            <h1 className="text-2xl font-bold">出了点问题</h1>
+            <h1 className="text-2xl font-bold">{t('error.something_wrong')}</h1>
             <p className="text-muted-foreground text-sm">
-              {this.state.error?.message || '发生未知错误'}
+              {this.state.error?.message || t('error.unknown')}
             </p>
             <button
               className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm"
@@ -42,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 window.location.href = '/'
               }}
             >
-              返回首页
+              {t('error.go_home')}
             </button>
           </div>
         </div>

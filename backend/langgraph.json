@@ -1,0 +1,15 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "python_version": "3.12",
+  "dependencies": ["."],
+  "env": ".env",
+  "graphs": {
+    "lead_agent": "agent_platform.harness.agents:create_forge_agent"
+  },
+  "auth": {
+    "path": "./src/agent_platform/api/v1/langgraph/auth.py:auth"
+  },
+  "checkpointer": {
+    "path": "./src/agent_platform/runtime/checkpointer/async_provider.py:make_checkpointer"
+  }
+}

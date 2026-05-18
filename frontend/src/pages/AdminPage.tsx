@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui'
 import { useToast } from '@/components/ui/toaster'
@@ -53,6 +54,7 @@ export function AdminPage() {
   const [tab, setTab] = useState<Tab>('audit')
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   // --- Queries ---
   const { data: auditLogs, isLoading: auditLoading } = useQuery<AuditLogResponse>({
@@ -93,16 +95,16 @@ export function AdminPage() {
     mutationFn: async (id: string) => apiClient.delete(`/users/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
-      toast('用户已删除', 'success')
+      toast(t('admin.user_deleted'), 'success')
     },
-    onError: () => toast('删除失败', 'error'),
+    onError: () => toast(t('admin.delete_failed'), 'error'),
   })
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'audit', label: '审计日志', icon: <FileText className="h-4 w-4" /> },
-    { key: 'users', label: '用户管理', icon: <Users className="h-4 w-4" /> },
-    { key: 'skills', label: '技能管理', icon: <Shield className="h-4 w-4" /> },
-    { key: 'connectors', label: '连接器', icon: <Plug className="h-4 w-4" /> },
+    { key: 'audit', label: t('admin.audit_logs'), icon: <FileText className="h-4 w-4" /> },
+    { key: 'users', label: t('admin.user_management'), icon: <Users className="h-4 w-4" /> },
+    { key: 'skills', label: t('admin.skill_management'), icon: <Shield className="h-4 w-4" /> },
+    { key: 'connectors', label: t('admin.connectors'), icon: <Plug className="h-4 w-4" /> },
   ]
 
   const roleBadge = (role: string) => {
@@ -124,7 +126,7 @@ export function AdminPage() {
       <Header />
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">管理后台</h1>
+          <h1 className="text-2xl font-bold mb-6">{t('admin.title')}</h1>
 
           {/* Tabs */}
           <div className="flex gap-1 mb-6 border-b">
@@ -150,22 +152,22 @@ export function AdminPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : !auditLogs?.items.length ? (
-                <p className="text-center py-12 text-muted-foreground">暂无审计日志</p>
+                <p className="text-center py-12 text-muted-foreground">{t('admin.no_audit_logs')}</p>
               ) : (
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-3 font-medium">时间</th>
-                        <th className="text-left p-3 font-medium">操作</th>
-                        <th className="text-left p-3 font-medium">资源类型</th>
-                        <th className="text-left p-3 font-medium">状态</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_time')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_action')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_resource')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
                       {auditLogs.items.map((log) => (
                         <tr key={log.id} className="hover:bg-accent/30">
-                          <td className="p-3">{new Date(log.timestamp).toLocaleString('zh-CN')}</td>
+                          <td className="p-3">{new Date(log.timestamp).toLocaleString()}</td>
                           <td className="p-3">
                             <span className="px-2 py-0.5 rounded bg-muted text-xs font-mono">
                               {log.action}
@@ -173,8 +175,8 @@ export function AdminPage() {
                           </td>
                           <td className="p-3">{log.resource_type}</td>
                           <td className="p-3">
-                            {log.success === true && <span className="text-green-600">成功</span>}
-                            {log.success === false && <span className="text-red-600">失败</span>}
+                            {log.success === true && <span className="text-green-600">{t('common.success')}</span>}
+                            {log.success === false && <span className="text-red-600">{t('common.failed')}</span>}
                             {log.success === null && <span className="text-muted-foreground">—</span>}
                           </td>
                         </tr>
@@ -183,7 +185,7 @@ export function AdminPage() {
                   </table>
                   {auditLogs.total > 50 && (
                     <div className="p-3 text-center text-sm text-muted-foreground border-t">
-                      显示 {auditLogs.items.length} / {auditLogs.total} 条
+                      {t('admin.showing', { shown: auditLogs.items.length, total: auditLogs.total })}
                     </div>
                   )}
                 </div>
@@ -199,17 +201,17 @@ export function AdminPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : users.length === 0 ? (
-                <p className="text-center py-12 text-muted-foreground">暂无用户</p>
+                <p className="text-center py-12 text-muted-foreground">{t('admin.no_users')}</p>
               ) : (
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-3 font-medium">用户</th>
-                        <th className="text-left p-3 font-medium">邮箱</th>
-                        <th className="text-left p-3 font-medium">角色</th>
-                        <th className="text-left p-3 font-medium">状态</th>
-                        <th className="text-right p-3 font-medium">操作</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_user')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_email')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_role')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_status')}</th>
+                        <th className="text-right p-3 font-medium">{t('admin.col_operation')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -251,15 +253,15 @@ export function AdminPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : skills.length === 0 ? (
-                <p className="text-center py-12 text-muted-foreground">暂无技能</p>
+                <p className="text-center py-12 text-muted-foreground">{t('admin.no_skills')}</p>
               ) : (
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-3 font-medium">技能</th>
-                        <th className="text-left p-3 font-medium">可见性</th>
-                        <th className="text-left p-3 font-medium">状态</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_skill')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_visibility')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -273,9 +275,9 @@ export function AdminPage() {
                           </td>
                           <td className="p-3">
                             {s.is_installed ? (
-                              <span className="text-green-600 text-xs">已安装</span>
+                              <span className="text-green-600 text-xs">{t('admin.installed')}</span>
                             ) : (
-                              <span className="text-muted-foreground text-xs">未安装</span>
+                              <span className="text-muted-foreground text-xs">{t('admin.not_installed')}</span>
                             )}
                           </td>
                         </tr>
@@ -295,15 +297,15 @@ export function AdminPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : connectors.length === 0 ? (
-                <p className="text-center py-12 text-muted-foreground">暂无连接器</p>
+                <p className="text-center py-12 text-muted-foreground">{t('admin.no_connectors')}</p>
               ) : (
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-3 font-medium">名称</th>
-                        <th className="text-left p-3 font-medium">认证方式</th>
-                        <th className="text-left p-3 font-medium">状态</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_name')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_auth')}</th>
+                        <th className="text-left p-3 font-medium">{t('admin.col_status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">

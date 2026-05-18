@@ -12,14 +12,15 @@ from datetime import datetime
 from typing import Any, AsyncIterator, Optional
 from uuid import UUID
 
-from langchain_core.messages import HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from agent_platform.agent.factory import create_agent, stream_agent_response
 from agent_platform.models.session import Session
 from agent_platform.models.task import Task, TaskStatus, TaskType
 from agent_platform.models.task_event import TaskEvent, TaskEventType
 from agent_platform.models.user import User
+from agent_platform.runtime import RuntimeContext, get_runtime_registry
+from agent_platform.runtime.events import RuntimeEvent
+from agent_platform.runtime.kernel import DeerFlowKernel
 from agent_platform.services.capability_planner import CapabilityPlan, get_capability_planner
 from agent_platform.services.skill_resolver import get_skill_resolver
 
@@ -78,6 +79,11 @@ class TaskRuntime:
         self.db = db
         self.skill_resolver = get_skill_resolver()
         self.capability_planner = get_capability_planner(db=db)
+        self.runtime_registry = get_runtime_registry()
+        try:
+            self.runtime_registry.get("deerflow")
+        except KeyError:
+            self.runtime_registry.register(DeerFlowKernel())
 
     async def create_task(
         self,
@@ -215,7 +221,7 @@ class TaskRuntime:
             if not user:
                 raise ValueError(f"User not found: {task.user_id}")
 
-            # Record agent creation event
+            # Record agent/runtime creation event
             await self._record_event(
                 task_id=task.id,
                 event_type=TaskEventType.AGENT_CREATED,
@@ -223,25 +229,12 @@ class TaskRuntime:
                     "model": session.model,
                     "tools": plan.tools,
                     "enable_hitl": plan.enable_hitl,
+                    "runtime_kind": (task.extra_metadata or {}).get("runtime_kind", "deerflow"),
                 },
             )
 
-            # Create agent
-            agent, _ = await create_agent(
-                model_name=session.model,
-                system_prompt=session.system_prompt,
-                thread_id=session.thread_id,
-                enable_hitl=plan.enable_hitl,
-                session_id=str(session.id),
-                task_id=str(task.id),
-                custom_hitl_rules=plan.hitl_rules,
-                session=session,
-                user=user,
-                db=self.db,
-            )
-
-            # Execute and stream
-            async for event in self._execute_plan(agent, task, session, plan):
+            # Execute and stream through unified runtime kernel
+            async for event in self._execute_plan(task, session, user, plan):
                 yield event
 
             # Mark task as completed
@@ -280,67 +273,90 @@ class TaskRuntime:
 
     async def _execute_plan(
         self,
-        agent: Any,
         task: Task,
         session: Session,
+        user: User,
         plan: CapabilityPlan,
     ) -> AsyncIterator[TaskStreamEvent]:
-        """Execute the plan and yield events.
-
-        Args:
-            agent: LangGraph agent
-            task: Task being executed
-            session: Session for the task
-            plan: Capability plan
-
-        Yields:
-            TaskStreamEvent instances
-        """
+        """Execute the plan through the unified runtime kernel and yield events."""
         thread_id = session.thread_id or str(session.id)
+        runtime_kind = (task.extra_metadata or {}).get("runtime_kind", "deerflow")
+        kernel = self.runtime_registry.get(runtime_kind)
+
+        context = RuntimeContext(
+            task_id=str(task.id),
+            session_id=str(session.id),
+            thread_id=thread_id,
+            user_id=str(user.id),
+            org_id=str(task.org_id) if task.org_id else None,
+            runtime_kind=runtime_kind,
+            model_name=session.model,
+            system_prompt=session.system_prompt,
+            input_message=task.prompt,
+            skill_ids=plan.skills,
+            tool_names=plan.tools,
+            metadata={
+                "session": session,
+                "user": user,
+                "db": self.db,
+                "enable_hitl": plan.enable_hitl,
+                "hitl_rules": plan.hitl_rules,
+            },
+        )
+
+        run = await kernel.create_run(context)
 
         try:
-            async for chunk in stream_agent_response(
-                agent=agent,
-                message=task.prompt,
-                thread_id=thread_id,
-            ):
-                if chunk["type"] == "content":
-                    # Yield content chunk
-                    yield TaskStreamEvent(
-                        type="content",
-                        content=chunk["content"],
-                    )
-
-                    # Record content event
-                    await self._record_event(
-                        task_id=task.id,
-                        event_type=TaskEventType.CONTENT_CHUNK,
-                        data={"content": chunk["content"]},
-                    )
-
-                elif chunk["type"] == "interrupt":
-                    # Yield interrupt event
-                    yield TaskStreamEvent(
-                        type="hitl_required",
-                        metadata=chunk.get("interrupt", {}),
-                    )
-
-                    # Record interrupt event
-                    await self._record_event(
-                        task_id=task.id,
-                        event_type=TaskEventType.INTERRUPT,
-                        data=chunk.get("interrupt", {}),
-                    )
-
-            # Signal completion
-            yield TaskStreamEvent(type="done")
-
+            async for event in kernel.stream(run, input_message=task.prompt):
+                async for mapped in self._map_runtime_event(task, event):
+                    yield mapped
         except Exception as e:
             logger.exception(f"Plan execution failed for task: {task.id}")
-            yield TaskStreamEvent(
-                type="error",
-                error=str(e),
+            yield TaskStreamEvent(type="error", error=str(e))
+
+    async def _map_runtime_event(
+        self,
+        task: Task,
+        event: RuntimeEvent,
+    ) -> AsyncIterator[TaskStreamEvent]:
+        """Map unified runtime events to current streaming/task-event semantics."""
+        if event.type == "run_started":
+            return
+
+        if event.type == "message_delta":
+            content = event.data.get("content")
+            if content is not None:
+                await self._record_event(
+                    task_id=task.id,
+                    event_type=TaskEventType.CONTENT_CHUNK,
+                    data={"content": content, "run_id": event.run_id},
+                )
+                yield TaskStreamEvent(type="content", content=content, metadata={"run_id": event.run_id})
+            return
+
+        if event.type == "approval_required":
+            interrupt = event.data.get("interrupt", {})
+            await self._record_event(
+                task_id=task.id,
+                event_type=TaskEventType.INTERRUPT,
+                data={**interrupt, "run_id": event.run_id},
             )
+            yield TaskStreamEvent(type="hitl_required", metadata={**interrupt, "run_id": event.run_id})
+            return
+
+        if event.type == "run_failed":
+            error = event.data.get("error", "Runtime execution failed")
+            await self._record_event(
+                task_id=task.id,
+                event_type=TaskEventType.FAILED,
+                data={"error": error, "run_id": event.run_id},
+            )
+            yield TaskStreamEvent(type="error", error=error)
+            return
+
+        if event.type == "run_completed":
+            yield TaskStreamEvent(type="done")
+            return
 
     async def _record_event(
         self,

@@ -22,6 +22,7 @@ from agent_platform.models.connector import (
     ConnectorConnection,
     ConnectorStatus,
 )
+from agent_platform.models.feedback import Feedback
 from agent_platform.models.notification_settings import (
     NotificationChannel,
     NotificationEvent,
@@ -35,6 +36,7 @@ from agent_platform.models.session import Session
 from agent_platform.models.skill import Skill, SkillGrant, SkillVisibility
 from agent_platform.models.task import Task, TaskPriority, TaskStatus, TaskType
 from agent_platform.models.task_event import TaskEvent, TaskEventType
+from agent_platform.models.token_usage import TokenUsage
 from agent_platform.models.user import User
 
 __all__ = [
@@ -51,6 +53,7 @@ __all__ = [
     "Connector",
     "ConnectorConnection",
     "ConnectorStatus",
+    "Feedback",
     "HITLRule",
     "NotificationChannel",
     "NotificationEvent",
@@ -72,6 +75,7 @@ __all__ = [
     "TaskStatus",
     "TaskType",
     "Team",
+    "TokenUsage",
     "User",
     "UserTeam",
 ]

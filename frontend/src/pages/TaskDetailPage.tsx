@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui'
 import apiClient from '@/lib/api'
@@ -39,6 +40,7 @@ export function TaskDetailPage() {
   const { taskId } = useParams({ from: '/tasks/$taskId' })
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { t, i18n } = useTranslation()
 
   const { data: task, isLoading } = useQuery<TaskDetail>({
     queryKey: ['task', taskId],
@@ -127,19 +129,19 @@ export function TaskDetailPage() {
       <div className="flex flex-col h-screen bg-background">
         <Header />
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">任务未找到</p>
+          <p className="text-muted-foreground">{t('task.not_found')}</p>
         </div>
       </div>
     )
   }
 
   const statusConfig: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
-    pending: { icon: <Clock className="h-5 w-5" />, label: '等待中', color: 'text-yellow-500' },
-    queued: { icon: <Clock className="h-5 w-5" />, label: '排队中', color: 'text-blue-500' },
-    running: { icon: <Loader2 className="h-5 w-5 animate-spin" />, label: '运行中', color: 'text-blue-500' },
-    completed: { icon: <CheckCircle className="h-5 w-5" />, label: '已完成', color: 'text-green-500' },
-    failed: { icon: <XCircle className="h-5 w-5" />, label: '失败', color: 'text-red-500' },
-    cancelled: { icon: <XCircle className="h-5 w-5" />, label: '已取消', color: 'text-gray-400' },
+    pending: { icon: <Clock className="h-5 w-5" />, label: t('task.status_pending'), color: 'text-yellow-500' },
+    queued: { icon: <Clock className="h-5 w-5" />, label: t('task.status_queued'), color: 'text-blue-500' },
+    running: { icon: <Loader2 className="h-5 w-5 animate-spin" />, label: t('task.status_running'), color: 'text-blue-500' },
+    completed: { icon: <CheckCircle className="h-5 w-5" />, label: t('task.status_completed'), color: 'text-green-500' },
+    failed: { icon: <XCircle className="h-5 w-5" />, label: t('task.status_failed'), color: 'text-red-500' },
+    cancelled: { icon: <XCircle className="h-5 w-5" />, label: t('task.status_cancelled'), color: 'text-gray-400' },
   }
 
   const sc = statusConfig[task.status] || statusConfig.pending
@@ -156,7 +158,7 @@ export function TaskDetailPage() {
             className="mb-4"
             onClick={() => navigate({ to: '/tasks' })}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> 返回任务列表
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t('task.back_to_list')}
           </Button>
 
           {/* Task header */}
@@ -178,7 +180,7 @@ export function TaskDetailPage() {
                   onClick={() => cancelMutation.mutate()}
                   disabled={cancelMutation.isPending}
                 >
-                  取消任务
+                  {t('task.cancel_task')}
                 </Button>
               )}
             </div>
@@ -196,23 +198,23 @@ export function TaskDetailPage() {
             {/* Metadata */}
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">类型：</span>
+                <span className="text-muted-foreground">{t('task.type')}:</span>
                 {task.type}
               </div>
               <div>
-                <span className="text-muted-foreground">优先级：</span>
-                {task.priority === 0 ? '紧急' : task.priority === 1 ? '普通' : '后台'}
+                <span className="text-muted-foreground">{t('task.priority')}:</span>
+                {task.priority === 0 ? t('task.priority_urgent') : task.priority === 1 ? t('task.priority_normal') : t('task.priority_background')}
               </div>
               {task.created_at && (
                 <div>
-                  <span className="text-muted-foreground">创建：</span>
-                  {new Date(task.created_at).toLocaleString('zh-CN')}
+                  <span className="text-muted-foreground">{t('task.created')}:</span>
+                  {new Date(task.created_at).toLocaleString(i18n.language)}
                 </div>
               )}
               {task.completed_at && (
                 <div>
-                  <span className="text-muted-foreground">完成：</span>
-                  {new Date(task.completed_at).toLocaleString('zh-CN')}
+                  <span className="text-muted-foreground">{t('task.status_completed')}:</span>
+                  {new Date(task.completed_at).toLocaleString(i18n.language)}
                 </div>
               )}
             </div>
@@ -223,7 +225,7 @@ export function TaskDetailPage() {
             <div className="border rounded-lg p-4 mb-4 bg-muted/30">
               <h3 className="font-medium mb-2 flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                实时输出
+                {t('task.live_output')}
               </h3>
               <pre className="text-sm whitespace-pre-wrap font-mono max-h-96 overflow-auto">
                 {streamContent.join('')}
@@ -234,14 +236,14 @@ export function TaskDetailPage() {
           {/* Result / Error */}
           {task.result_summary && (
             <div className="border rounded-lg p-4 mb-4 bg-green-50 dark:bg-green-950">
-              <h3 className="font-medium mb-2 text-green-700 dark:text-green-300">执行结果</h3>
+              <h3 className="font-medium mb-2 text-green-700 dark:text-green-300">{t('task.result')}</h3>
               <p className="text-sm whitespace-pre-wrap">{task.result_summary}</p>
             </div>
           )}
 
           {task.error_message && (
             <div className="border rounded-lg p-4 mb-4 bg-red-50 dark:bg-red-950">
-              <h3 className="font-medium mb-2 text-red-700 dark:text-red-300">错误信息</h3>
+              <h3 className="font-medium mb-2 text-red-700 dark:text-red-300">{t('task.error_info')}</h3>
               <p className="text-sm whitespace-pre-wrap">{task.error_message}</p>
             </div>
           )}
@@ -249,7 +251,7 @@ export function TaskDetailPage() {
           {/* Artifacts */}
           {artifacts?.items && artifacts.items.length > 0 && (
             <div className="border rounded-lg p-4">
-              <h3 className="font-medium mb-3">产出文件</h3>
+              <h3 className="font-medium mb-3">{t('task.artifacts')}</h3>
               <div className="space-y-2">
                 {artifacts.items.map((artifact, i) => (
                   <div

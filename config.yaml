@@ -131,3 +131,48 @@ title:
   enabled: true
   max_words: 6
   max_chars: 60
+
+# ============================================================================
+# ACP (Agent Communication Protocol) Configuration
+# ============================================================================
+# External agent integrations (Claude Code, Codex, custom ACP agents)
+acp:
+  enabled: true
+  agents:
+    # Claude Code agent
+    # - name: claude-code
+    #   api_url: http://localhost:8080
+    #   api_key: $CLAUDE_CODE_API_KEY
+    #   timeout: 900
+    # Codex agent
+    # - name: codex
+    #   command: codex
+    #   args: ["--acp"]
+    #   timeout: 600
+
+# ============================================================================
+# Channels Configuration
+# ============================================================================
+# IM channel integrations (Feishu, Slack, Telegram, DingTalk, WeChat, WeCom, Discord)
+channels:
+  enabled: false
+  # feishu:
+  #   app_id: $FEISHU_APP_ID
+  #   app_secret: $FEISHU_APP_SECRET
+  # slack:
+  #   bot_token: $SLACK_BOT_TOKEN
+  #   app_token: $SLACK_APP_TOKEN
+  # telegram:
+  #   bot_token: $TELEGRAM_BOT_TOKEN
+  # dingtalk:
+  #   client_id: $DINGTALK_CLIENT_ID
+  #   client_secret: $DINGTALK_CLIENT_SECRET
+  # wechat:
+  #   app_id: $WECHAT_APP_ID
+  #   app_secret: $WECHAT_APP_SECRET
+  # wecom:
+  #   corp_id: $WECOM_CORP_ID
+  #   agent_id: $WECOM_AGENT_ID
+  #   secret: $WECOM_SECRET
+  # discord:
+  #   bot_token: $DISCORD_BOT_TOKEN

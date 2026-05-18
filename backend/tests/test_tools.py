@@ -9,7 +9,7 @@ class TestFileOps:
         base = Path(os.environ.get("FORGE_SANDBOX_PATH", ".deer-flow/threads"))
         ws = base / "default" / "user-data" / "workspace"; ws.mkdir(parents=True, exist_ok=True)
         r = await write_file_tool.ainvoke({"path": "test.txt", "content": "hello"})
-        assert "hello" in r
+        assert "success" in r.lower() or "wrote" in r.lower()
     async def test_02_read_file(self):
         from agent_platform.integration.tools.file_ops import read_file_tool
         base = Path(os.environ.get("FORGE_SANDBOX_PATH", ".deer-flow/threads"))
@@ -18,7 +18,7 @@ class TestFileOps:
     async def test_03_ls_dir(self):
         from agent_platform.integration.tools.file_ops import ls_tool
         base = Path(os.environ.get("FORGE_SANDBOX_PATH", ".deer-flow/threads"))
-        r = await ls_tool.ainvoke({"path": ".deer-flow/threads/default/user-data/workspace"})
+        r = await ls_tool.ainvoke({"path": "."})
         assert "test.txt" in r
     async def test_04_path_traversal_blocked(self):
         from agent_platform.integration.tools.file_ops import read_file_tool
@@ -77,7 +77,7 @@ class TestBash:
     async def test_08_pipeline(self):
         from agent_platform.integration.tools.bash import bash_tool
         r = await bash_tool.ainvoke({"command": "echo hello | wc -l"})
-        assert "2" in r
+        assert "1" in r
 
 class TestBuiltin:
     @pytest.mark.asyncio

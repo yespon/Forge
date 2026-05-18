@@ -9,7 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from agent_platform import models  # noqa: F401
 from agent_platform.api.v1 import approvals, artifacts, auth, chat, connectors, health, orgs, sandbox, sessions, skills, tasks, users, webhooks, ws
 from agent_platform.api.v1 import integration as integration_routes
+from agent_platform.api.v1 import acp as acp_routes
+from agent_platform.api.v1 import metrics as metrics_routes
 from agent_platform.api.v1.admin import audit as admin_audit
+from agent_platform.api.v1.langgraph import assistants_router, runs_router, threads_router
 from agent_platform.config import get_settings
 from agent_platform.database import init_db
 from agent_platform.middleware.rate_limit import RateLimitMiddleware
@@ -44,6 +47,10 @@ app.add_middleware(
 # Rate limiting
 app.add_middleware(RateLimitMiddleware)
 
+# Prometheus metrics
+from agent_platform.api.v1.metrics import PrometheusMiddleware
+app.add_middleware(PrometheusMiddleware)
+
 # Include routers
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(auth.router, tags=["auth"])
@@ -60,7 +67,14 @@ app.include_router(skills.router, prefix="/api/v1", tags=["skills"])
 app.include_router(webhooks.router, prefix="/api/v1")
 app.include_router(ws.router, prefix="/api/v1")
 app.include_router(integration_routes.router)
+app.include_router(acp_routes.router, prefix="/api/v1", tags=["acp"])
+app.include_router(metrics_routes.router, tags=["metrics"])
 app.include_router(admin_audit.router, prefix="/api/v1/admin", tags=["admin"])
+
+# LangGraph Platform-compatible API
+app.include_router(threads_router, prefix="/api/langgraph")
+app.include_router(runs_router, prefix="/api/langgraph")
+app.include_router(assistants_router, prefix="/api/langgraph")
 
 
 @app.get("/health")

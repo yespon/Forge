@@ -3,14 +3,16 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+ROOT = Path(__file__).parent.parent.parent  # project root (Forge/)
+
 class TestParity:
-    def test_001_architecture_exists(self): assert Path('ARCHITECTURE.md').exists()
-    def test_002_roadmap_exists(self): assert Path('ROADMAP.md').exists()
-    def test_003_model_configs_exists(self): assert Path('MODEL_CONFIGS.md').exists()
-    def test_004_docs_site_exists(self): assert Path('website').exists()
-    def test_005_i18n_exists(self): assert Path('frontend/src/i18n/index.ts').exists()
-    def test_006_skills_count(self): assert len(list(Path('skills/public').glob('*/SKILL.md'))) >= 21
-    def test_007_test_file_count(self): assert len(list(Path('backend/tests').glob('*.py'))) >= 15
+    def test_001_architecture_exists(self): assert (ROOT / 'ARCHITECTURE.md').exists()
+    def test_002_roadmap_exists(self): assert (ROOT / 'ROADMAP.md').exists()
+    def test_003_model_configs_exists(self): assert (ROOT / 'MODEL_CONFIGS.md').exists()
+    def test_004_docs_site_exists(self): assert (ROOT / 'website').exists()
+    def test_005_i18n_exists(self): assert (ROOT / 'frontend/src/i18n/index.ts').exists()
+    def test_006_skills_count(self): assert len(list((ROOT / 'skills/public').glob('*/SKILL.md'))) >= 21
+    def test_007_test_file_count(self): assert len(list((ROOT / 'backend/tests').glob('*.py'))) >= 15
     def test_008_provider_count(self):
         from agent_platform.integration.models import get_registered_providers
         assert len(get_registered_providers()) >= 8
@@ -33,4 +35,4 @@ class TestParity:
         from agent_platform.integration.memory import MemoryManager
         assert MemoryManager is not None
     def test_015_doc_site_package(self):
-        assert 'docusaurus' in Path('website/package.json').read_text().lower()
+        assert 'docusaurus' in (ROOT / 'website/package.json').read_text().lower()

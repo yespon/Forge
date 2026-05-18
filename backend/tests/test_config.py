@@ -78,7 +78,7 @@ class TestForgeConfig:
     def test_06_skills_path(self):
         from agent_platform.integration.config import ForgeDeerFlowConfig
         c = ForgeDeerFlowConfig()
-        assert c.skills.path == "skills/public"
+        assert c.skills.path == "skills"
     def test_07_default_model(self):
         from agent_platform.integration.config import ForgeDeerFlowConfig
         c = ForgeDeerFlowConfig()
@@ -95,13 +95,13 @@ class TestTypes:
         assert m.name == "test" and m.model == "gpt-4"
     def test_02_thinking_fields(self):
         from agent_platform.integration.types import ModelConfig
-        m = ModelConfig(supports_thinking=True, when_thinking_enabled={"extra_body": {"thinking": {"type": "enabled"}}})
-        assert m.when_thinking_enabled is not None
+        m = ModelConfig(supports_thinking=True, extra_config={"thinking": {"type": "enabled"}})
+        assert m.supports_thinking is True and m.extra_config is not None
     def test_03_penalty_fields(self):
         from agent_platform.integration.types import ModelConfig
-        m = ModelConfig(temperature=0.5, top_p=0.8, frequency_penalty=0.2, presence_penalty=0.1)
+        m = ModelConfig(temperature=0.5, extra_config={"top_p": 0.8, "frequency_penalty": 0.2})
         assert m.temperature == 0.5
     def test_04_stop_sequences(self):
         from agent_platform.integration.types import ModelConfig
-        m = ModelConfig(stop_sequences=["END", "STOP"])
-        assert len(m.stop_sequences) == 2
+        m = ModelConfig(extra_config={"stop_sequences": ["END", "STOP"]})
+        assert len(m.extra_config["stop_sequences"]) == 2

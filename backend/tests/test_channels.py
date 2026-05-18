@@ -18,17 +18,20 @@ class TestMessageBus:
         b = MessageBus()
         assert b is not None
     def test_03_publish_inbound(self):
-        from agent_platform.integration.channels import MessageBus
+        import asyncio
+        from agent_platform.integration.channels import MessageBus, InboundMessage
         b = MessageBus()
-        n = b.publish_inbound({"text": "hello"})
-        assert n >= 0
+        msg = InboundMessage(text="hello")
+        asyncio.run(b.publish_inbound(msg))
+        assert b._inbound.qsize() >= 1
     def test_04_consume_inbound(self):
-        from agent_platform.integration.channels import MessageBus
+        import asyncio
+        from agent_platform.integration.channels import MessageBus, InboundMessage
         b = MessageBus()
-        b.publish_inbound({"text": "msg1"})
-        b.publish_inbound({"text": "msg2"})
-        msgs = b.consume_inbound()
-        assert len(msgs) >= 1
+        asyncio.run(b.publish_inbound(InboundMessage(text="msg1")))
+        asyncio.run(b.publish_inbound(InboundMessage(text="msg2")))
+        msg = asyncio.run(b.consume_inbound())
+        assert msg.text == "msg1"
     def test_05_subscribe_outbound(self):
         from agent_platform.integration.channels import MessageBus
         b = MessageBus()
@@ -39,36 +42,37 @@ class TestMessageBus:
 
 class TestChannel:
     def test_01_base_channel(self):
-        from agent_platform.integration.channels import Channel, ChannelType
-        c = Channel(channel_type=ChannelType.FEISHU)
+        from agent_platform.integration.channels import FeishuChannel, ChannelType, MessageBus
+        bus = MessageBus()
+        c = FeishuChannel(bus, {"app_id": "test", "app_secret": "secret"})
         assert c.channel_type == ChannelType.FEISHU
     def test_02_feishu_channel(self):
-        from agent_platform.integration.channels import FeishuChannel
-        c = FeishuChannel({"app_id": "test", "app_secret": "secret"})
+        from agent_platform.integration.channels import FeishuChannel, MessageBus
+        c = FeishuChannel(MessageBus(), {"app_id": "test", "app_secret": "secret"})
         assert c is not None
     def test_03_slack_channel(self):
-        from agent_platform.integration.channels import SlackChannel
-        c = SlackChannel({"bot_token": "token", "app_token": "app_token"})
+        from agent_platform.integration.channels import SlackChannel, MessageBus
+        c = SlackChannel(MessageBus(), {"bot_token": "token", "app_token": "app_token"})
         assert c is not None
     def test_04_telegram_channel(self):
-        from agent_platform.integration.channels import TelegramChannel
-        c = TelegramChannel({"bot_token": "token"})
+        from agent_platform.integration.channels import TelegramChannel, MessageBus
+        c = TelegramChannel(MessageBus(), {"bot_token": "token"})
         assert c is not None
     def test_05_dingtalk_channel(self):
-        from agent_platform.integration.channels import DingTalkChannel
-        c = DingTalkChannel({"client_id": "id", "client_secret": "secret"})
+        from agent_platform.integration.channels import DingTalkChannel, MessageBus
+        c = DingTalkChannel(MessageBus(), {"client_id": "id", "client_secret": "secret"})
         assert c is not None
     def test_06_wechat_channel(self):
-        from agent_platform.integration.channels import WeChatChannel
-        c = WeChatChannel({"app_id": "id", "app_secret": "secret"})
+        from agent_platform.integration.channels import WeChatChannel, MessageBus
+        c = WeChatChannel(MessageBus(), {"app_id": "id", "app_secret": "secret"})
         assert c is not None
     def test_07_discord_channel(self):
-        from agent_platform.integration.channels import DiscordChannel
-        c = DiscordChannel({"bot_token": "token"})
+        from agent_platform.integration.channels import DiscordChannel, MessageBus
+        c = DiscordChannel(MessageBus(), {"bot_token": "token"})
         assert c is not None
     def test_08_wecom_channel(self):
-        from agent_platform.integration.channels import WeComChannel
-        c = WeComChannel({"webhook_url": "url", "corp_id": "id", "corp_secret": "secret"})
+        from agent_platform.integration.channels import WeComChannel, MessageBus
+        c = WeComChannel(MessageBus(), {"webhook_url": "url", "corp_id": "id", "corp_secret": "secret"})
         assert c is not None
 
 class TestChannelService:

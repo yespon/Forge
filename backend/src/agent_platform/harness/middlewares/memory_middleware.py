@@ -27,7 +27,7 @@ class MemoryMiddleware(AgentMiddleware):
 
     def _ensure_memory(self):
         if not self._initialized:
-            from agent_platform.integration.memory import get_memory_manager
+            from agent_platform.harness.memory import get_memory_manager
             self._mm = get_memory_manager()
             self._initialized = True
 

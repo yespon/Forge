@@ -1,6 +1,9 @@
 """HITL rules engine tests (25 tests)."""
 import os, sys; from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-for-testing")
 
 class TestHITLRules:
     def test_01_engine_creation(self):

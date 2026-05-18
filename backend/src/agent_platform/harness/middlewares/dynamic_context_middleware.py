@@ -31,7 +31,7 @@ class DynamicContextMiddleware(AgentMiddleware):
 
     def _get_memory_context(self) -> str:
         try:
-            from agent_platform.integration.memory import get_memory_manager
+            from agent_platform.harness.memory import get_memory_manager
             mm = get_memory_manager()
             return mm.get_memory_context()
         except Exception:

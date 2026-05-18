@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui'
 import { useAuthStore } from '@/stores'
@@ -9,6 +10,7 @@ import { Save, User, Bell, BellOff } from 'lucide-react'
 export function SettingsPage() {
   const { user, setUser } = useAuthStore()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const [displayName, setDisplayName] = useState(user?.display_name ?? '')
   const [email, setEmail] = useState(user?.email ?? '')
@@ -26,9 +28,9 @@ export function SettingsPage() {
         email,
       })
       setUser(res.data)
-      toast('个人信息已保存', 'success')
+      toast(t('settings.saved'), 'success')
     } catch {
-      toast('保存失败', 'error')
+      toast(t('settings.save_failed'), 'error')
     } finally {
       setSaving(false)
     }
@@ -39,18 +41,18 @@ export function SettingsPage() {
       <Header />
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-2xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">设置</h1>
+          <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
 
           {/* Profile Section */}
           <div className="border rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <User className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">个人信息</h2>
+              <h2 className="text-lg font-semibold">{t('settings.profile')}</h2>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">显示名称</label>
+                <label className="block text-sm font-medium mb-1">{t('settings.display_name')}</label>
                 <input
                   className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   value={displayName}
@@ -58,7 +60,7 @@ export function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">邮箱</label>
+                <label className="block text-sm font-medium mb-1">{t('settings.email')}</label>
                 <input
                   type="email"
                   className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -67,7 +69,7 @@ export function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">角色</label>
+                <label className="block text-sm font-medium mb-1">{t('settings.role')}</label>
                 <p className="text-sm text-muted-foreground px-3 py-2 bg-muted rounded-md">
                   {user?.role ?? '—'}
                 </p>
@@ -80,7 +82,7 @@ export function SettingsPage() {
               disabled={saving}
             >
               <Save className="h-4 w-4" />
-              {saving ? '保存中...' : '保存'}
+              {saving ? t('common.saving') : t('common.save')}
             </Button>
           </div>
 
@@ -88,12 +90,12 @@ export function SettingsPage() {
           <div className="border rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Bell className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">通知偏好</h2>
+              <h2 className="text-lg font-semibold">{t('settings.notifications')}</h2>
             </div>
 
             <div className="space-y-3">
               <label className="flex items-center justify-between">
-                <span className="text-sm">审批请求通知</span>
+                <span className="text-sm">{t('settings.notify_approval')}</span>
                 <button
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifyApproval ? 'bg-primary' : 'bg-muted'}`}
                   onClick={() => setNotifyApproval(!notifyApproval)}
@@ -104,7 +106,7 @@ export function SettingsPage() {
                 </button>
               </label>
               <label className="flex items-center justify-between">
-                <span className="text-sm">任务完成通知</span>
+                <span className="text-sm">{t('settings.notify_task')}</span>
                 <button
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifyTask ? 'bg-primary' : 'bg-muted'}`}
                   onClick={() => setNotifyTask(!notifyTask)}
@@ -118,7 +120,7 @@ export function SettingsPage() {
 
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <BellOff className="h-3 w-3" />
-              通知偏好将在下次登录后生效
+              {t('settings.notify_hint')}
             </p>
           </div>
         </div>

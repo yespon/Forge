@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Bot, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores'
 import {
   Button,
@@ -25,6 +26,7 @@ export function LoginPage() {
   const [displayName, setDisplayName] = useState('')
 
   const { login, register, isLoading, error, clearError } = useAuthStore()
+  const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,12 +61,12 @@ export function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl text-center">
-            {isRegister ? '创建账户' : '欢迎回来'}
+            {isRegister ? t('login.create_account') : t('login.welcome')}
           </CardTitle>
           <CardDescription className="text-center">
             {isRegister
-              ? '填写以下信息创建新账户'
-              : '登录到 Agent Runtime Platform'}
+              ? t('login.fill_info')
+              : t('login.login_to')}
           </CardDescription>
         </CardHeader>
 
@@ -78,9 +80,9 @@ export function LoginPage() {
 
             {isRegister && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">显示名称</label>
+                <label className="text-sm font-medium">{t('login.display_name')}</label>
                 <Input
-                  placeholder="输入您的显示名称"
+                  placeholder={t('login.display_name_placeholder')}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   disabled={isLoading}
@@ -89,7 +91,7 @@ export function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">邮箱</label>
+              <label className="text-sm font-medium">{t('login.email')}</label>
               <Input
                 type="email"
                 placeholder="name@company.com"
@@ -101,11 +103,11 @@ export function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">密码</label>
+              <label className="text-sm font-medium">{t('login.password')}</label>
               <div className="relative">
                 <Input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="输入您的密码"
+                  placeholder={t('login.password_placeholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -127,7 +129,7 @@ export function LoginPage() {
               </div>
               {isRegister && (
                 <p className="text-xs text-muted-foreground">
-                  密码至少需要 8 个字符
+                  {t('login.password_hint')}
                 </p>
               )}
             </div>
@@ -138,19 +140,19 @@ export function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isRegister ? '创建中...' : '登录中...'}
+                  {isRegister ? t('login.creating') : t('login.logging_in')}
                 </>
               ) : isRegister ? (
-                '创建账户'
+                t('login.register')
               ) : (
-                '登录'
+                t('login.login')
               )}
             </Button>
 
             <div className="text-center text-sm">
               {isRegister ? (
                 <>
-                  已有账户？{' '}
+                  {t('login.has_account')}{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -159,12 +161,12 @@ export function LoginPage() {
                     }}
                     className="text-primary hover:underline font-medium"
                   >
-                    立即登录
+                    {t('login.login_now')}
                   </button>
                 </>
               ) : (
                 <>
-                  还没有账户？{' '}
+                  {t('login.no_account')}{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -173,7 +175,7 @@ export function LoginPage() {
                     }}
                     className="text-primary hover:underline font-medium"
                   >
-                    立即注册
+                    {t('login.register_now')}
                   </button>
                 </>
               )}

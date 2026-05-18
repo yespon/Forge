@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Shield, Check, X, Clock, AlertTriangle, History } from 'lucide-react'
 import { useApprovalStore } from '@/stores'
 import {
@@ -22,40 +23,22 @@ const riskLevelColors: Record<RiskLevel, string> = {
   critical: 'bg-red-500',
 }
 
-const statusConfig: Record<
-  ApprovalStatus,
-  { label: string; color: string; icon: typeof Check }
-> = {
-  pending: {
-    label: '待审批',
-    color: 'bg-yellow-500',
-    icon: Clock,
-  },
-  approved: {
-    label: '已批准',
-    color: 'bg-green-500',
-    icon: Check,
-  },
-  rejected: {
-    label: '已拒绝',
-    color: 'bg-red-500',
-    icon: X,
-  },
-  expired: {
-    label: '已过期',
-    color: 'bg-gray-500',
-    icon: Clock,
-  },
-  escalated: {
-    label: '已升级',
-    color: 'bg-purple-500',
-    icon: AlertTriangle,
-  },
-  cancelled: {
-    label: '已取消',
-    color: 'bg-gray-500',
-    icon: X,
-  },
+const statusLabelKeys: Record<ApprovalStatus, string> = {
+  pending: 'approval.status_pending',
+  approved: 'approval.status_approved',
+  rejected: 'approval.status_rejected',
+  expired: 'approval.status_expired',
+  escalated: 'approval.status_escalated',
+  cancelled: 'approval.status_cancelled',
+}
+
+const statusColors: Record<ApprovalStatus, { color: string; icon: typeof Check }> = {
+  pending: { color: 'bg-yellow-500', icon: Clock },
+  approved: { color: 'bg-green-500', icon: Check },
+  rejected: { color: 'bg-red-500', icon: X },
+  expired: { color: 'bg-gray-500', icon: Clock },
+  escalated: { color: 'bg-purple-500', icon: AlertTriangle },
+  cancelled: { color: 'bg-gray-500', icon: X },
 }
 
 interface ApprovalListProps {
@@ -63,6 +46,7 @@ interface ApprovalListProps {
 }
 
 export function ApprovalList({ onApprovalAction }: ApprovalListProps) {
+  const { t } = useTranslation()
   const {
     pendingApprovals,
     historyApprovals,
@@ -122,7 +106,7 @@ export function ApprovalList({ onApprovalAction }: ApprovalListProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            {showHistory ? '审批历史' : '待审批请求'}
+            {showHistory ? t('approval.history_title') : t('approval.pending_title')}
             {!showHistory && pendingApprovals.length > 0 && (
               <Badge variant="destructive" className="ml-auto">
                 {pendingApprovals.length}
@@ -133,7 +117,7 @@ export function ApprovalList({ onApprovalAction }: ApprovalListProps) {
               size="sm"
               className="ml-auto h-7 w-7 p-0"
               onClick={() => setShowHistory(!showHistory)}
-              title={showHistory ? '返回待审批' : '查看历史'}
+              title={showHistory ? t('approval.back_to_pending') : t('approval.view_history')}
             >
               <History className="h-4 w-4" />
             </Button>
@@ -147,11 +131,11 @@ export function ApprovalList({ onApprovalAction }: ApprovalListProps) {
                 historyApprovals.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <History className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">暂无审批历史</p>
+                    <p className="text-sm">{t('approval.no_history')}</p>
                   </div>
                 ) : (
                   historyApprovals.map((approval) => {
-                    const sts = statusConfig[approval.status]
+                    const sts = statusColors[approval.status]
                     const StsIcon = sts.icon
                     return (
                       <div
@@ -165,7 +149,7 @@ export function ApprovalList({ onApprovalAction }: ApprovalListProps) {
                               <p className="font-medium text-sm truncate">{approval.tool_name}</p>
                               <Badge variant="secondary" className="text-xs">
                                 <StsIcon className="h-3 w-3 mr-1" />
-                                {sts.label}
+                                {t(statusLabelKeys[approval.status])}
                               </Badge>
                             </div>
                             {approval.description && (
@@ -189,13 +173,13 @@ export function ApprovalList({ onApprovalAction }: ApprovalListProps) {
               ) : pendingApprovals.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Shield className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">暂无待审批请求</p>
-                  <p className="text-xs mt-1">所有审批请求已处理完毕</p>
+                  <p className="text-sm">{t('approval.no_pending')}</p>
+                  <p className="text-xs mt-1">{t('approval.all_processed')}</p>
                 </div>
               ) : (
                 pendingApprovals.map((approval) => {
-                  const status = statusConfig[approval.status]
-                  const StatusIcon = status.icon
+                  const stsConf = statusColors[approval.status]
+                  const StatusIcon = stsConf.icon
 
                   return (
                     <div
@@ -225,11 +209,11 @@ export function ApprovalList({ onApprovalAction }: ApprovalListProps) {
                               variant="secondary"
                               className={cn(
                                 'text-xs',
-                                status.color.replace('bg-', 'bg-opacity-20 text-')
+                                stsConf.color.replace('bg-', 'bg-opacity-20 text-')
                               )}
                             >
                               <StatusIcon className="h-3 w-3 mr-1" />
-                              {status.label}
+                              {t(statusLabelKeys[approval.status])}
                             </Badge>
                           </div>
 
